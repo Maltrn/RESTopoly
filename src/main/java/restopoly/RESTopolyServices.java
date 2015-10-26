@@ -8,10 +8,10 @@ import spark.Request;
 import spark.Response;
 import spark.Route;
 
-public class Roll {
+public class RESTopolyServices {
     public static void main( String[] args) {
-        get("/posts", (req, res) -> {
-            return "42";
+        get("/dice", (req, res) -> {
+            return new Dice();
         });
     }
 }
