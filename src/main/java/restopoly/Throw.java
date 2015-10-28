@@ -20,10 +20,4 @@ public class Throw {
         return roll2;
     }
 
-    @Override
-    public String toString() {
-        return
-                "roll1:" + roll1 +
-                ", roll2:" + roll2;
-    }
 }

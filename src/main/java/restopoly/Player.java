@@ -5,7 +5,7 @@ package restopoly;
  */
 public class Player {
 
-    private String playerid;
+    private String id;
     private String name;
     private String uri;
     private Place place;
@@ -13,16 +13,48 @@ public class Player {
     private boolean ready = false;
 
     public Player(String playerid){
-        this.playerid = playerid;
+        this.id = playerid;
     }
 
 
-    public String getPlayerid() {
-        return playerid;
+    public String getId() {
+        return id;
     }
 
-    public void setPlayerid(String playerid) {
-        this.playerid = playerid;
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getUri() {
+        return uri;
+    }
+
+    public void setUri(String uri) {
+        this.uri = uri;
+    }
+
+    public Place getPlace() {
+        return place;
+    }
+
+    public void setPlace(Place place) {
+        this.place = place;
+    }
+
+    public int getPosition() {
+        return position;
+    }
+
+    public void setPosition(int position) {
+        this.position = position;
     }
 
     public boolean isReady() {
@@ -33,13 +65,4 @@ public class Player {
         this.ready = ready;
     }
 
-    @Override
-    public String toString() {
-        return
-                "playerid:'" + playerid + '\'' +
-                ", name:'" + name + '\'' +
-                ", uri:'" + uri + '\'' +
-                ", ready:" + ready +
-                '}';
-    }
 }

@@ -25,8 +25,4 @@ public class Games {
         games.add(game);
     }
 
-    @Override
-    public String toString() {
-        return games.toString();
-    }
 }

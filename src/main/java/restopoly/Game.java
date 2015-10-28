@@ -24,9 +24,19 @@ public class Game {
 
     public Player getPlayer(String playerid){
         for(Player player : players){
-            if(player.getPlayerid().equals(playerid)) return player;
+            if(player.getId().equals(playerid)) return player;
         }
         return null;
+    }
+
+    public boolean deletePlayer(String playerid){
+        for(Player player : players){
+            if(player.getId().equals(playerid)) {
+                players.remove(player);
+                return true;
+            }
+        }
+        return false;
     }
 
     public String getGameid() {
@@ -45,12 +55,4 @@ public class Game {
         this.started = started;
     }
 
-    @Override
-    public String toString() {
-        return
-                "gameid:'" + gameid + '\'' +
-                ", players:" + players +
-                ", started:" + started +
-                '}';
-    }
 }
