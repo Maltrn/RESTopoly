@@ -11,7 +11,7 @@ public class DiceServer {
     public static void main(String args[]){
         try {
             LocateRegistry.createRegistry(Registry.REGISTRY_PORT);
-            Naming.rebind("Dice", new Dice());
+            Naming.rebind("Roll", new Dice());
         }
         catch (MalformedURLException ex) {}
         catch (RemoteException ex) {}

@@ -11,7 +11,7 @@ import java.rmi.RemoteException;
 public class DiceClient {
     public static void main(String args[]){
         try{
-            DiceRMI dice = (DiceRMI)Naming.lookup("//127.0.0.1:1099/Dice");
+            DiceRMI dice = (DiceRMI)Naming.lookup("//127.0.0.1:1099/Roll");
             System.out.println(dice.roll().getNumber());
         }
         catch (RemoteException | NotBoundException | MalformedURLException e) {}

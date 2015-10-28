@@ -5,11 +5,11 @@ import java.util.Random;
 /**
  * Created by Krystian.Graczyk on 26.10.15.
  */
-public class Dice {
+public class Roll {
 
     private int number;
 
-    public Dice(){
+    public Roll(){
         Random rnd = new Random();
         number = rnd.nextInt(6)+1;
     }
