@@ -1,15 +1,9 @@
 package restopoly;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.mashape.unirest.http.HttpResponse;
-import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
-import com.mashape.unirest.http.ObjectMapper;
-
-import java.io.IOException;
-import java.lang.reflect.Type;
 
 /**
  * Created by Krystian.Graczyk on 28.10.15.
