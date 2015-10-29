@@ -10,7 +10,7 @@ public class Game {
 
     private String gameid;
     private ArrayList<Player> players = new ArrayList<Player>();
-    private Components components;
+    //private Components components = new Components();
     private boolean started = false;
 
     public Game(){
