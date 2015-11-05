@@ -1,4 +1,6 @@
-package restopoly;
+package restopoly.resources;
+
+import restopoly.resources.Player;
 
 import java.util.ArrayList;
 import java.util.UUID;

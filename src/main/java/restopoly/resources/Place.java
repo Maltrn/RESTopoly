@@ -1,4 +1,4 @@
-package restopoly;
+package restopoly.resources;
 
 /**
  * Created by Krystian.Graczyk on 27.10.15.

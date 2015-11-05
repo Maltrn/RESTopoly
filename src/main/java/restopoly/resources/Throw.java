@@ -1,4 +1,6 @@
-package restopoly;
+package restopoly.resources;
+
+import restopoly.resources.Roll;
 
 /**
  * Created by Krystian.Graczyk on 27.10.15.

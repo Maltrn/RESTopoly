@@ -1,4 +1,4 @@
-package restopoly;
+package restopoly.resources;
 
 import java.util.ArrayList;
 
