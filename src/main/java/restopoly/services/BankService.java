@@ -39,9 +39,8 @@ public class BankService {
                 res.status(409);
                 return banks.getBank(req.params(":gameid")).getAccount(req.body());
             }
-            HttpResponse gamesService = Unirest.get(yellowPagesUrl + "/games").asJson();
-
-           HttpResponse playerResponse = Unirest.get(gamesService + req.params(":gameid")+"/players/"+req.body()).asJson();
+            //Später Service über den Verzeichnisdienst holen sobald er funktioniert?
+           HttpResponse playerResponse = Unirest.get("http://vs-docker.informatik.haw-hamburg.de:10819/games/" + req.params(":gameid")+"/players/"+req.body()).asJson();
             Gson gson = new Gson();
             Player player = gson.fromJson(playerResponse.getBody().toString(),Player.class);
 
@@ -76,6 +75,10 @@ public class BankService {
             res.status(201);
             res.header("Content-Type", "application/json");
             Account from = banks.getBank(req.params(":gameid")).getAccount(req.params(":from"));
+            if(from.getSaldo()<Integer.parseInt(req.params(":amount"))){
+                res.status(403);
+                return null;
+            }
             int saldo = from.getSaldo();
             from.setSaldo(saldo-Integer.parseInt(req.params(":amount")));
             Gson gson = new GsonBuilder()
@@ -89,13 +92,18 @@ public class BankService {
             res.status(201);
             res.header("Content-Type", "application/json");
 
-            Account to = banks.getBank(req.params(":gameid")).getAccount(req.params(":to"));
-            int tosaldo = to.getSaldo();
-            to.setSaldo(tosaldo+Integer.parseInt(req.params(":amount")));
-
             Account from = banks.getBank(req.params(":gameid")).getAccount(req.params(":from"));
             int fromsaldo = from.getSaldo();
+
+            Account to = banks.getBank(req.params(":gameid")).getAccount(req.params(":to"));
+            int tosaldo = to.getSaldo();
+
+            if(fromsaldo<Integer.parseInt(req.params(":amount"))){
+                res.status(403);
+                return null;
+            }
             from.setSaldo(fromsaldo-Integer.parseInt(req.params(":amount")));
+            to.setSaldo(tosaldo+Integer.parseInt(req.params(":amount")));
 
             return null;
         });
