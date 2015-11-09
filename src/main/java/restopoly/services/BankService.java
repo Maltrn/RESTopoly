@@ -16,18 +16,25 @@ import static spark.Spark.*;
 public class BankService {
 
     public static void main(String[] args) {
-
+        port(4569);
         String yellowPagesUrl = "http://vs-docker.informatik.haw-hamburg.de:8053/services";
 
         Banks banks = new Banks();
+
+        get("/banks/:gameid", (req, res) -> {
+            res.header("Content-Type", "application/json");
+            res.status(200);
+            Bank bank = banks.getBank(req.params(":gameid"));
+            Gson gson = new GsonBuilder()
+                    .create();
+            return gson.toJson(bank);
+        });
 
         put("/banks/:gameid", (req, res) -> {
             res.header("Content-Type", "application/json");
             Bank bank = new Bank(req.params(":gameid"));
             banks.addBank(bank);
             Gson gson = new GsonBuilder()
-                    .setExclusionStrategies(new CustomExclusionStrategy("restopoly.resources.Game.players"))
-                    .setExclusionStrategies(new CustomExclusionStrategy("restopoly.resources.Game.started"))
                     .create();
             return gson.toJson(bank);
         });
@@ -35,19 +42,28 @@ public class BankService {
         post("/banks/:gameid/players", (req, res) -> {
             res.status(201);
             res.header("Content-Type", "application/json");
-            if(!banks.getBank(req.params(":gameid")).getAccount(req.body()).equals(null)){
+            if(banks.getBank(req.params(":gameid")).getAccount(req.body())!=null){
                 res.status(409);
                 return banks.getBank(req.params(":gameid")).getAccount(req.body());
             }
             //Später Service über den Verzeichnisdienst holen sobald er funktioniert?
-           HttpResponse playerResponse = Unirest.get("http://vs-docker.informatik.haw-hamburg.de:10819/games/" + req.params(":gameid")+"/players/"+req.body()).asJson();
+           //HttpResponse playerResponse = Unirest.get("http://vs-docker.informatik.haw-hamburg.de:10819/games/" + req.params(":gameid")+"/players/"+req.body()).asJson();
+            HttpResponse playerResponse = Unirest.get("http://0.0.0.0:4567/games/" + req.params(":gameid")+"/players/"+req.body()).asJson();
             Gson gson = new Gson();
             Player player = gson.fromJson(playerResponse.getBody().toString(),Player.class);
 
             Account account = new Account(req.body(),player,0);
             Bank bank =banks.getBank(req.params(":gameid"));
             bank.addAccount(account);
-            return gson.toJson(account);
+            Gson gsonb = new GsonBuilder().create();
+            return gsonb.toJson(account);
+        });
+
+        get("/banks/:gameid/players", (req, res) -> {
+            res.status(200);
+            res.header("Content-Type", "application/json");
+            Gson gson = new GsonBuilder().create();
+            return gson.toJson(banks.getBank(req.params(":gameid")).getAccounts());
         });
 
         get("/banks/:gameid/players/:playerid", (req, res) -> {
@@ -77,7 +93,7 @@ public class BankService {
             Account from = banks.getBank(req.params(":gameid")).getAccount(req.params(":from"));
             if(from.getSaldo()<Integer.parseInt(req.params(":amount"))){
                 res.status(403);
-                return null;
+                return "";
             }
             int saldo = from.getSaldo();
             from.setSaldo(saldo-Integer.parseInt(req.params(":amount")));
@@ -100,12 +116,12 @@ public class BankService {
 
             if(fromsaldo<Integer.parseInt(req.params(":amount"))){
                 res.status(403);
-                return null;
+                return "";
             }
             from.setSaldo(fromsaldo-Integer.parseInt(req.params(":amount")));
             to.setSaldo(tosaldo+Integer.parseInt(req.params(":amount")));
 
-            return null;
+            return "";
         });
 
 

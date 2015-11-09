@@ -18,7 +18,7 @@ import static spark.Spark.*;
 
 public class GameService {
     public static void main(String[] args) {
-
+        port(4567);
         String yellowPagesUrl = "http://vs-docker.informatik.haw-hamburg.de:8053/services";
 
         Games games = new Games();
@@ -80,13 +80,13 @@ public class GameService {
             player.setUri(req.queryParams("uri"));
             Game game = games.getGame(req.params(":gameid"));
             game.addPlayer(player);
-            return null;
+            return "";
         });
 
         delete("/games/:gameid/players/:playerid", (req, res) -> {
             Game game = games.getGame(req.params(":gameid"));;
             game.deletePlayer(req.params(":playerid"));
-            return null;
+            return "";
         });
 
         put("/games/:gameid/players/:playerid/ready", (req, res) -> {
