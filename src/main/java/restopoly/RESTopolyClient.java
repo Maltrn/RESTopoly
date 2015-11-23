@@ -24,7 +24,7 @@ public class RESTopolyClient {
     public RESTopolyClient(){}
 
     public String createGame() throws UnirestException {
-        HttpResponse response = Unirest.post(GAMESADRESS+"/games").asJson();
+        HttpResponse response = Unirest.post(GAMESADRESS+"/games").queryString("gameUri",GAMESADRESS+"/games").queryString("diceUri",DICESADRESS+"/dice").queryString("bankUri",BANKSADRESS+"/banks").asJson();
         Gson gson = new Gson();
         Game game = gson.fromJson(response.getBody().toString(),Game.class);
         Unirest.put(BANKSADRESS+"/banks/"+game.getGameid()).asString();
@@ -32,8 +32,8 @@ public class RESTopolyClient {
 
     }
 
-    public void joinGame(String gameid, String playerid, String name, String uri) throws UnirestException {
-        Unirest.put(GAMESADRESS+"/games/"+gameid+"/players/"+playerid).queryString("name", name).queryString("uri", uri).asString();
+    public void joinGame(String gameid, String playerid, String name) throws UnirestException {
+        Unirest.put(GAMESADRESS+"/games/"+gameid+"/players/"+playerid).queryString("name", name).queryString("uri", GAMESADRESS+"/games/"+gameid+"/players/"+name).asString();
         Unirest.post(BANKSADRESS + "/banks/" + gameid + "/players").body(playerid).asString();
     }
 
@@ -120,10 +120,8 @@ public class RESTopolyClient {
                                 "What is your Player ID?", null);
                         String name = JOptionPane.showInputDialog(frame,
                                 "What is your Name?", null);
-                        String uri = JOptionPane.showInputDialog(frame,
-                                "What is your URI?", null);
                         try {
-                            client.joinGame(gameid,playerid,name,uri);
+                            client.joinGame(gameid,playerid,name);
                         } catch (UnirestException e1) {
                             e1.printStackTrace();
                         }

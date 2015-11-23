@@ -12,7 +12,7 @@ public class Game {
 
     private String gameid;
     private ArrayList<Player> players = new ArrayList<Player>();
-    //private Components components = new Components();
+    private Components components = new Components();
     private boolean started = false;
 
     public Game(){
@@ -47,6 +47,14 @@ public class Game {
 
     public ArrayList<Player> getPlayers() {
         return players;
+    }
+
+    public Components getComponents() {
+        return components;
+    }
+
+    public void setComponents(Components components) {
+        this.components = components;
     }
 
     public boolean isStarted() {

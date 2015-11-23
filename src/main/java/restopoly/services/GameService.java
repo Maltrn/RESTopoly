@@ -9,10 +9,7 @@ import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import restopoly.CustomExclusionStrategy;
-import restopoly.resources.Game;
-import restopoly.resources.Games;
-import restopoly.resources.Player;
-import restopoly.resources.Roll;
+import restopoly.resources.*;
 
 import static spark.Spark.*;
 
@@ -32,6 +29,7 @@ public class GameService {
                     .setExclusionStrategies(new CustomExclusionStrategy("restopoly.resources.Player.position"))
                     .setExclusionStrategies(new CustomExclusionStrategy("restopoly.resources.Player.uri"))
                     .setExclusionStrategies(new CustomExclusionStrategy("restopoly.resources.Game.started"))
+                    .setExclusionStrategies(new CustomExclusionStrategy("restopoly.resources.Game.components"))
                     .create();
             return gson.toJson(games.getGames());
         });
@@ -40,10 +38,15 @@ public class GameService {
             res.status(201);
             res.header("Content-Type","application/json");
             Game game = new Game();
+            Components components = game.getComponents();
+            components.setGame(req.queryParams("gameUri"));
+            components.setDice(req.queryParams("diceUri"));
+            components.setBank(req.queryParams("bankUri"));
             games.addGame(game);;
             Gson gson = new GsonBuilder()
                     .setExclusionStrategies(new CustomExclusionStrategy("restopoly.resources.Game.players"))
                     .setExclusionStrategies(new CustomExclusionStrategy("restopoly.resources.Game.started"))
+                    .setExclusionStrategies(new CustomExclusionStrategy("restopoly.resources.Game.components"))
                     .create();
             return gson.toJson(game);
         });
@@ -111,14 +114,14 @@ public class GameService {
 
 
         // REGISTRIERUNG DER SERVICES
-        try {
+ /*       try {
             Unirest.post(yellowPagesUrl + "?name=GAMES_GET&description=Gives_you_a_list_of_all_games&service=games&uri=http://vs-docker.informatik.haw-hamburg.de/games").asJson();
             Unirest.post(yellowPagesUrl + "?name=GAMES_POST&description=Creates_a_new_game&service=games&uri=http://vs-docker.informatik.haw-hamburg.de/games").asJson();
             Unirest.post(yellowPagesUrl + "?name=GAMES_GAMEID_GET&description=Gives_you_information_about_the_specific_game&service=games&uri=http://vs-docker.informatik.haw-hamburg.de/games").asJson();
         } catch (UnirestException e) {
             e.printStackTrace();
         }
-
+*/
 
     }
 }

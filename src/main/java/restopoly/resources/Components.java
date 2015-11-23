@@ -13,6 +13,9 @@ public class Components {
     private String decks;
     private String events;
 
+    Components(){
+    }
+
     Components(String gameHost, String diceHost, String boardHost, String bankHost, String brokerHost, String decksHost, String eventsHost){
         game =  gameHost;
         dice = diceHost;
