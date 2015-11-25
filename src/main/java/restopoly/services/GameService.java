@@ -9,21 +9,20 @@ import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import restopoly.CustomExclusionStrategy;
+import restopoly.Service;
 import restopoly.resources.*;
 
 import static spark.Spark.*;
 
 public class GameService {
     public static void main(String[] args) {
-        port(4567);
-        String yellowPagesUrl = "http://vs-docker.informatik.haw-hamburg.de:8053/services";
 
         Games games = new Games();
 
 
         get("/games", (req, res) -> {
             res.status(200);
-            res.header("Content-Type","application/json");
+            res.header("Content-Type", "application/json");
             Gson gson = new GsonBuilder()
                     .setExclusionStrategies(new CustomExclusionStrategy("restopoly.resources.Player.ready"))
                     .setExclusionStrategies(new CustomExclusionStrategy("restopoly.resources.Player.position"))
@@ -36,13 +35,14 @@ public class GameService {
 
         post("/games", (req, res) -> {
             res.status(201);
-            res.header("Content-Type","application/json");
+            res.header("Content-Type", "application/json");
             Game game = new Game();
             Components components = game.getComponents();
             components.setGame(req.queryParams("gameUri"));
             components.setDice(req.queryParams("diceUri"));
             components.setBank(req.queryParams("bankUri"));
-            games.addGame(game);;
+            games.addGame(game);
+            ;
             Gson gson = new GsonBuilder()
                     .setExclusionStrategies(new CustomExclusionStrategy("restopoly.resources.Game.players"))
                     .setExclusionStrategies(new CustomExclusionStrategy("restopoly.resources.Game.started"))
@@ -53,7 +53,7 @@ public class GameService {
 
         get("/games/:gameid", (req, res) -> {
             res.status(200);
-            res.header("Content-Type","application/json");
+            res.header("Content-Type", "application/json");
             Gson gson = new GsonBuilder()
                     .create();
             return gson.toJson(games.getGame(req.params(":gameid")));
@@ -61,7 +61,7 @@ public class GameService {
 
         get("/games/:gameid/players", (req, res) -> {
             res.status(200);
-            res.header("Content-Type","application/json");
+            res.header("Content-Type", "application/json");
             Game game = games.getGame(req.params(":gameid"));
             Gson gson = new GsonBuilder().create();
             return gson.toJson(game.getPlayers());
@@ -69,7 +69,7 @@ public class GameService {
 
         get("/games/:gameid/players/:playerid", (req, res) -> {
             res.status(200);
-            res.header("Content-Type","application/json");
+            res.header("Content-Type", "application/json");
             Game game = games.getGame(req.params(":gameid"));
             Gson gson = new GsonBuilder()
                     .setExclusionStrategies(new CustomExclusionStrategy("restopoly.resources.Player.position"))
@@ -87,7 +87,8 @@ public class GameService {
         });
 
         delete("/games/:gameid/players/:playerid", (req, res) -> {
-            Game game = games.getGame(req.params(":gameid"));;
+            Game game = games.getGame(req.params(":gameid"));
+            ;
             game.deletePlayer(req.params(":playerid"));
             return "";
         });
@@ -96,8 +97,8 @@ public class GameService {
             Game game = games.getGame(req.params(":gameid"));
             Player player = game.getPlayer(req.params(":playerid"));
             player.setReady(true);
-            for(Player p : game.getPlayers()){
-                if(!p.isReady()) return player;
+            for (Player p : game.getPlayers()) {
+                if (!p.isReady()) return player;
             }
             game.setStarted(true);
             Gson gson = new GsonBuilder().create();
@@ -112,16 +113,19 @@ public class GameService {
         });
 
 
-
-        // REGISTRIERUNG DER SERVICES
- /*       try {
-            Unirest.post(yellowPagesUrl + "?name=GAMES_GET&description=Gives_you_a_list_of_all_games&service=games&uri=http://vs-docker.informatik.haw-hamburg.de/games").asJson();
-            Unirest.post(yellowPagesUrl + "?name=GAMES_POST&description=Creates_a_new_game&service=games&uri=http://vs-docker.informatik.haw-hamburg.de/games").asJson();
-            Unirest.post(yellowPagesUrl + "?name=GAMES_GAMEID_GET&description=Gives_you_information_about_the_specific_game&service=games&uri=http://vs-docker.informatik.haw-hamburg.de/games").asJson();
+        try {
+            Unirest.post("http://vs-docker.informatik.haw-hamburg.de:8053/services")
+                    .header("accept", "application/json")
+                    .header("Content-Type", "application/json")
+                    .queryString("name", "GAMES")
+                    .queryString("description", "Games Service")
+                    .queryString("service", "games")
+                    .queryString("uri", "https://vs-docker.informatik.haw-hamburg.de/ports/18191/games")
+                    .body(new Gson().toJson(new Service("GAMES", "Games Service", "games", "https://vs-docker.informatik.haw-hamburg.de/ports/18191/games")))
+                    .asJson();;
         } catch (UnirestException e) {
             e.printStackTrace();
-        }
-*/
 
+        }
     }
 }

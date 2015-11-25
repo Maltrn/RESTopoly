@@ -24,55 +24,57 @@ public class RESTopolyClient {
     public RESTopolyClient(){}
 
     public String createGame() throws UnirestException {
-        HttpResponse response = Unirest.post(GAMESADRESS+"/games").queryString("gameUri",GAMESADRESS+"/games").queryString("diceUri",DICESADRESS+"/dice").queryString("bankUri",BANKSADRESS+"/banks").asJson();
+        HttpResponse response = Unirest.post(GAMESADRESS)
+                .queryString("gameUri", GAMESADRESS)
+                .queryString("diceUri", DICESADRESS)
+                .queryString("bankUri", BANKSADRESS)
+                .asJson();
         Gson gson = new Gson();
         Game game = gson.fromJson(response.getBody().toString(),Game.class);
-        Unirest.put(BANKSADRESS+"/banks/"+game.getGameid()).asString();
+        Unirest.put(BANKSADRESS+"/"+game.getGameid()).asString();
         return game.getGameid();
 
     }
 
     public void joinGame(String gameid, String playerid, String name) throws UnirestException {
-        Unirest.put(GAMESADRESS+"/games/"+gameid+"/players/"+playerid).queryString("name", name).queryString("uri", GAMESADRESS+"/games/"+gameid+"/players/"+name).asString();
-        Unirest.post(BANKSADRESS + "/banks/" + gameid + "/players").body(playerid).asString();
+        Unirest.put(GAMESADRESS+"/"+gameid+"/players/"+playerid).queryString("name", name).queryString("uri", GAMESADRESS+"/"+gameid+"/players/"+name).asString();
+        Unirest.post(BANKSADRESS + "/" + gameid + "/players").body(playerid).asString();
     }
 
     public void ready(String gameid, String playerid) throws UnirestException {
-        Unirest.put(GAMESADRESS+"/games/"+gameid+"/players/"+playerid+"/ready").asString();
+        Unirest.put(GAMESADRESS+"/"+gameid+"/players/"+playerid+"/ready").asString();
     }
 
     public int roll() throws UnirestException {
-        HttpResponse response = Unirest.get(DICESADRESS + "/dice").asJson();
+        HttpResponse response = Unirest.get(DICESADRESS).asJson();
         Gson gson = new Gson();
         Roll roll = gson.fromJson(response.getBody().toString(),Roll.class);
         return roll.getNumber();
     }
 
     public String accountBalance(String account) throws UnirestException {
-        HttpResponse response = Unirest.get(BANKSADRESS + "/banks/" + GAMEID + "/players/" + account).asString();
+        HttpResponse response = Unirest.get(BANKSADRESS + "/" + GAMEID + "/players/" + account).asString();
         return response.getBody().toString();
     }
 
     public void transferFrom(String from, int amount) throws UnirestException {
-        Unirest.post(BANKSADRESS + "/banks/" + GAMEID + "/transfer/from/"+from+"/"+amount).asString();
+        Unirest.post(BANKSADRESS + "/" + GAMEID + "/transfer/from/"+from+"/"+amount).asString();
     }
 
     public void transferTo(String to, int amount) throws UnirestException {
-        Unirest.post(BANKSADRESS + "/banks/" + GAMEID + "/transfer/to/"+to+"/"+amount).asString();
+        Unirest.post(BANKSADRESS + "/" + GAMEID + "/transfer/to/"+to+"/"+amount).asString();
     }
 
     public void transferFromTo(String from, String to, int amount) throws UnirestException {
-        Unirest.post(BANKSADRESS + "/banks/" + GAMEID + "/transfer/from/"+from+"/to/"+to+"/"+amount).asString();
+        Unirest.post(BANKSADRESS + "/" + GAMEID + "/transfer/from/"+from+"/to/"+to+"/"+amount).asString();
     }
 
     public static void main(String args[]) throws UnirestException {
-        GAMESADRESS = "http://0.0.0.0:4567";
-        DICESADRESS = "http://0.0.0.0:4568";
-        BANKSADRESS = "http://0.0.0.0:4569";
+        //GAMESADRESS = "http://0.0.0.0:4567/games";
+        GAMESADRESS = "https://vs-docker.informatik.haw-hamburg.de/ports/18191/games";
+        DICESADRESS = "https://vs-docker.informatik.haw-hamburg.de/ports/18190/dice";
+        BANKSADRESS = "https://vs-docker.informatik.haw-hamburg.de/ports/18192/banks";
         RESTopolyClient client = new RESTopolyClient();
-      //  String gameid = client.createGame();
-      //  client.joinGame(gameid,"1","Krystian","test");
-      //  client.ready(gameid,"1");
 
         JFrame frame = new JFrame("RESTopoly");
         frame.setVisible(true);
