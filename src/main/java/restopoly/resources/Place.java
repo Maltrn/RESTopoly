@@ -6,8 +6,8 @@ package restopoly.resources;
 public class Place {
     private String name;
 
-    public Place(){
-
+    public Place(String name){
+    this.name = name;
     }
 
     public String getName() {

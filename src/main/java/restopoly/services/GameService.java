@@ -5,7 +5,6 @@ package restopoly.services;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import restopoly.CustomExclusionStrategy;
@@ -42,7 +41,10 @@ public class GameService {
             components.setDice(req.queryParams("diceUri"));
             components.setBank(req.queryParams("bankUri"));
             games.addGame(game);
-            ;
+            Unirest.put("http://vs-docker.informatik.haw-hamburg.de:18192/banks/"+"/"+game.getGameid()).asString();
+            Unirest.put("http://vs-docker.informatik.haw-hamburg.de:18193/boards/"+"/"+game.getGameid()).asString();
+
+
             Gson gson = new GsonBuilder()
                     .setExclusionStrategies(new CustomExclusionStrategy("restopoly.resources.Game.players"))
                     .setExclusionStrategies(new CustomExclusionStrategy("restopoly.resources.Game.started"))
@@ -88,7 +90,6 @@ public class GameService {
 
         delete("/games/:gameid/players/:playerid", (req, res) -> {
             Game game = games.getGame(req.params(":gameid"));
-            ;
             game.deletePlayer(req.params(":playerid"));
             return "";
         });
@@ -122,7 +123,7 @@ public class GameService {
                     .queryString("service", "games")
                     .queryString("uri", "https://vs-docker.informatik.haw-hamburg.de/ports/18191/games")
                     .body(new Gson().toJson(new Service("GAMES", "Games Service", "games", "https://vs-docker.informatik.haw-hamburg.de/ports/18191/games")))
-                    .asJson();;
+                    .asJson();
         } catch (UnirestException e) {
             e.printStackTrace();
 

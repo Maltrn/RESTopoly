@@ -31,7 +31,6 @@ public class RESTopolyClient {
                 .asJson();
         Gson gson = new Gson();
         Game game = gson.fromJson(response.getBody().toString(),Game.class);
-        Unirest.put(BANKSADRESS+"/"+game.getGameid()).asString();
         return game.getGameid();
 
     }
