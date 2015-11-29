@@ -4,6 +4,7 @@ TODO bis 16.12:
 1. Die Clientseite erweitern, sodass Events erstellt werden können usw.  
 2. Die ganzen neuen Funktionen testen  
 3. Die ganzen Banken betreffenden Services transaktional machen und Aufgabe 3.4B  
+4. Alle Services mit Kommentaren zur Übersichtlichkeit versehen
   
 Probleme/Unklarheiten:  
 Soll der Client nun der richtige Client für das endgültige Spiel sein oder die Vollmacht über das Spiel haben also auch transferFromTo aufrufen können usw.  
