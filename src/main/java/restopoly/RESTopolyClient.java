@@ -1,15 +1,20 @@
 package restopoly;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
+import restopoly.resources.Event;
 import restopoly.resources.Game;
 import restopoly.resources.Roll;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+
+import static spark.Spark.get;
+import static spark.Spark.post;
 
 /**
  * Created by Krystian.Graczyk on 28.10.15.
@@ -20,6 +25,7 @@ public class RESTopolyClient {
     private static String BANKSADRESS;
     private static String DICESADRESS;
     private static String GAMEID;
+    private static boolean TURN = false;
 
     public RESTopolyClient(){}
 
@@ -69,6 +75,19 @@ public class RESTopolyClient {
     }
 
     public static void main(String args[]) throws UnirestException {
+
+        post("/player/turn", (req, res) -> {
+            TURN = true;
+            return "";
+        });
+
+        post("/player/event", (req, res) -> {
+           Event event = new Gson().fromJson(req.body().toString(), Event.class);
+            System.out.println(event);
+            return "";
+        });
+
+
         //GAMESADRESS = "http://0.0.0.0:4567/games";
         GAMESADRESS = "https://vs-docker.informatik.haw-hamburg.de/ports/18191/games";
         DICESADRESS = "https://vs-docker.informatik.haw-hamburg.de/ports/18190/dice";
@@ -149,7 +168,7 @@ public class RESTopolyClient {
                     if(cb.getSelectedItem().toString().equals("Account Balance")){
                         try {
                             String account = JOptionPane.showInputDialog(frame,
-                                    "Which account balance to you want to see?", null);
+                                    "Which account balance do you want to see?", null);
                             JOptionPane.showMessageDialog(frame, client.accountBalance(account));
                         } catch (UnirestException e1) {
                             e1.printStackTrace();
