@@ -2,13 +2,14 @@ package restopoly.services;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.exceptions.UnirestException;
-import restopoly.CustomExclusionStrategy;
-import restopoly.Service;
+import restopoly.util.CustomExclusionStrategy;
+import restopoly.util.Service;
 import restopoly.resources.*;
+
+import java.util.ArrayList;
 
 import static spark.Spark.*;
 
@@ -19,11 +20,16 @@ public class BankService {
 
     public static void main(String[] args) {
 
-        Banks banks = new Banks();;
+        ArrayList<Bank> banks = new ArrayList<Bank>();
+        String gameaddress = "http://vs-docker.informatik.haw-hamburg.de:18191/games/";
+
         get("/banks/:gameid", (req, res) -> {
             res.header("Content-Type", "application/json");
             res.status(200);
-            Bank bank = banks.getBank(req.params(":gameid"));
+            Bank bank = null;
+            for(Bank b : banks){
+                if(b.getGameid().equals(req.params(":gameid"))) bank=b;
+            }
             Gson gson = new GsonBuilder()
                     .create();
             return gson.toJson(bank);
@@ -32,7 +38,7 @@ public class BankService {
         put("/banks/:gameid", (req, res) -> {
             res.header("Content-Type", "application/json");
             Bank bank = new Bank(req.params(":gameid"));
-            banks.addBank(bank);
+            banks.add(bank);
             Gson gson = new GsonBuilder()
                     .create();
             return gson.toJson(bank);
@@ -41,46 +47,58 @@ public class BankService {
         post("/banks/:gameid/players", (req, res) -> {
             res.status(201);
             res.header("Content-Type", "application/json");
-            if(banks.getBank(req.params(":gameid")).getAccount(req.body())!=null){
-                res.status(409);
-                return banks.getBank(req.params(":gameid")).getAccount(req.body());
+            Bank bank = null;
+            for(Bank b : banks){
+                if(b.getGameid().equals(req.params(":gameid"))) bank=b;
             }
-            //Später Service über den Verzeichnisdienst holen sobald er funktioniert?
-            HttpResponse playerResponse = Unirest.get("http://vs-docker.informatik.haw-hamburg.de:18191/games/" + req.params(":gameid")+"/players/"+req.body()).asJson();
             Gson gson = new Gson();
+            if(bank.getAccount(req.body())!=null){
+                res.status(409);
+                return gson.toJson(bank.getAccount(req.body()));
+            }
+
+            HttpResponse playerResponse = Unirest.get(gameaddress+ req.params(":gameid")+"/players/"+req.body()).asJson();
             Player player = gson.fromJson(playerResponse.getBody().toString(),Player.class);
 
             Account account = new Account(req.body(),player,0);
-            Bank bank =banks.getBank(req.params(":gameid"));
             bank.addAccount(account);
-            Gson gsonb = new GsonBuilder().create();
-            return gsonb.toJson(account);
+            return gson.toJson(account);
         });
 
         get("/banks/:gameid/players", (req, res) -> {
             res.status(200);
             res.header("Content-Type", "application/json");
+            Bank bank = null;
+            for(Bank b : banks){
+                if(b.getGameid().equals(req.params(":gameid"))) bank=b;
+            }
             Gson gson = new GsonBuilder().create();
-            return gson.toJson(banks.getBank(req.params(":gameid")).getAccounts());
+            return gson.toJson(bank.getAccounts());
         });
 
         get("/banks/:gameid/players/:playerid", (req, res) -> {
             res.status(200);
             res.header("Content-Type", "application/json");
-            int saldo = banks.getBank(req.params(":gameid")).getAccount(req.params(":playerid")).getSaldo();
+            Bank bank = null;
+            for(Bank b : banks){
+                if(b.getGameid().equals(req.params(":gameid"))) bank=b;
+            }
+            int saldo = bank.getAccount(req.params(":playerid")).getSaldo();
             Gson gson = new GsonBuilder().create();
             return gson.toJson(saldo);
         });
 
 
         post("/banks/:gameid/transfer/to/:to/:amount", (req, res) -> {
-            Unirest.get("http://vs-docker.informatik.haw-hamburg.de:18193/mutex/bankMutex").asString();
             res.status(201);
             res.header("Content-Type", "application/json");
-            Account to = banks.getBank(req.params(":gameid")).getAccount(req.params(":to"));
+            Bank bank = null;
+            for(Bank b : banks){
+                if(b.getGameid().equals(req.params(":gameid"))) bank=b;
+            }
+            Account to = bank.getAccount(req.params(":to"));
             int saldo = to.getSaldo();
             to.setSaldo(saldo+Integer.parseInt(req.params(":amount")));
-            Unirest.put("http://vs-docker.informatik.haw-hamburg.de:18193/mutex/bankMutex").asString();
 
             Gson gson = new GsonBuilder()
                     .setExclusionStrategies(new CustomExclusionStrategy("restopoly.resources.Account.player"))
@@ -89,17 +107,19 @@ public class BankService {
         });
 
         post("/banks/:gameid/transfer/from/:from/:amount", (req, res) -> {
-            Unirest.get("http://vs-docker.informatik.haw-hamburg.de:18193/mutex/bankMutex").asString();
             res.status(201);
             res.header("Content-Type", "application/json");
-            Account from = banks.getBank(req.params(":gameid")).getAccount(req.params(":from"));
+            Bank bank = null;
+            for(Bank b : banks){
+                if(b.getGameid().equals(req.params(":gameid"))) bank=b;
+            }
+            Account from = bank.getAccount(req.params(":from"));
             if(from.getSaldo()<Integer.parseInt(req.params(":amount"))){
                 res.status(403);
                 return "";
             }
             int saldo = from.getSaldo();
             from.setSaldo(saldo-Integer.parseInt(req.params(":amount")));
-            Unirest.put("http://vs-docker.informatik.haw-hamburg.de:18193/mutex/bankMutex").asString();
 
             Gson gson = new GsonBuilder()
                     .setExclusionStrategies(new CustomExclusionStrategy("restopoly.resources.Account.player"))
@@ -109,14 +129,16 @@ public class BankService {
 
 
         post("/banks/:gameid/transfer/from/:from/to/:to/:amount", (req, res) -> {
-            Unirest.get("http://vs-docker.informatik.haw-hamburg.de:18193/mutex/bankMutex").asString();
             res.status(201);
             res.header("Content-Type", "application/json");
-
-            Account from = banks.getBank(req.params(":gameid")).getAccount(req.params(":from"));
+            Bank bank = null;
+            for(Bank b : banks){
+                if(b.getGameid().equals(req.params(":gameid"))) bank=b;
+            }
+            Account from = bank.getAccount(req.params(":from"));
             int fromsaldo = from.getSaldo();
 
-            Account to = banks.getBank(req.params(":gameid")).getAccount(req.params(":to"));
+            Account to = bank.getAccount(req.params(":to"));
             int tosaldo = to.getSaldo();
 
             if(fromsaldo<Integer.parseInt(req.params(":amount"))){
@@ -125,8 +147,6 @@ public class BankService {
             }
             from.setSaldo(fromsaldo-Integer.parseInt(req.params(":amount")));
             to.setSaldo(tosaldo+Integer.parseInt(req.params(":amount")));
-            Unirest.put("http://vs-docker.informatik.haw-hamburg.de:18193/mutex/bankMutex").asString();
-
             return "";
         });
 

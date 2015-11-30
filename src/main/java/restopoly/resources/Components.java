@@ -10,20 +10,20 @@ public class Components {
     private String board;
     private String bank;
     private String broker;
-    private String decks;
-    private String events;
+    private String deck;
+    private String event;
 
     Components(){
     }
 
-    Components(String gameHost, String diceHost, String boardHost, String bankHost, String brokerHost, String decksHost, String eventsHost){
+    Components(String gameHost, String diceHost, String boardHost, String bankHost, String brokerHost, String deckHost, String eventHost){
         game =  gameHost;
         dice = diceHost;
         board = boardHost;
         bank = bankHost;
         broker = brokerHost;
-        decks = decksHost;
-        events = eventsHost;
+        deck = deckHost;
+        event = eventHost;
     }
 
     public String getGame() {
@@ -66,19 +66,19 @@ public class Components {
         this.broker = broker;
     }
 
-    public String getDecks() {
-        return decks;
+    public String getDeck() {
+        return deck;
     }
 
-    public void setDecks(String decks) {
-        this.decks = decks;
+    public void setDeck(String deck) {
+        this.deck = deck;
     }
 
-    public String getEvents() {
-        return events;
+    public String getEvent() {
+        return event;
     }
 
-    public void setEvents(String events) {
-        this.events = events;
+    public void setEvent(String event) {
+        this.event = event;
     }
 }

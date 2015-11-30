@@ -3,7 +3,7 @@ package restopoly.services;
 import com.google.gson.Gson;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
-import restopoly.Service;
+import restopoly.util.Service;
 
 import static spark.Spark.delete;
 import static spark.Spark.put;
@@ -41,8 +41,8 @@ public class MutexService {
                     .queryString("name", "MUTEX")
                     .queryString("description", "Mutex Service")
                     .queryString("service", "mutex")
-                    .queryString("uri", "https://vs-docker.informatik.haw-hamburg.de/ports/18194/mutex")
-                    .body(new Gson().toJson(new Service("MUTEX", "Mutex Service", "mutex", "https://vs-docker.informatik.haw-hamburg.de/ports/18194/mutex")))
+                    .queryString("uri", "https://vs-docker.informatik.haw-hamburg.de/ports/18195/mutex")
+                    .body(new Gson().toJson(new Service("MUTEX", "Mutex Service", "mutex", "https://vs-docker.informatik.haw-hamburg.de/ports/18195/mutex")))
                     .asJson();
         } catch (UnirestException e) {
             e.printStackTrace();

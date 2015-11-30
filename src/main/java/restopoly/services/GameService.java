@@ -7,18 +7,20 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
-import restopoly.CustomExclusionStrategy;
-import restopoly.Service;
+import restopoly.util.CustomExclusionStrategy;
+import restopoly.util.Service;
 import restopoly.resources.*;
+
+import java.util.ArrayList;
 
 import static spark.Spark.*;
 
 public class GameService {
     public static void main(String[] args) {
 
-        Games games = new Games();
-
-
+        ArrayList<Game> games = new ArrayList<Game>();
+        String bankaddress= "http://vs-docker.informatik.haw-hamburg.de:18192/banks/";
+        String boardaddress = "http://vs-docker.informatik.haw-hamburg.de:18193/boards/";
         get("/games", (req, res) -> {
             res.status(200);
             res.header("Content-Type", "application/json");
@@ -29,7 +31,7 @@ public class GameService {
                     .setExclusionStrategies(new CustomExclusionStrategy("restopoly.resources.Game.started"))
                     .setExclusionStrategies(new CustomExclusionStrategy("restopoly.resources.Game.components"))
                     .create();
-            return gson.toJson(games.getGames());
+            return gson.toJson(games);
         });
 
         post("/games", (req, res) -> {
@@ -40,9 +42,11 @@ public class GameService {
             components.setGame(req.queryParams("gameUri"));
             components.setDice(req.queryParams("diceUri"));
             components.setBank(req.queryParams("bankUri"));
-            games.addGame(game);
-            Unirest.put("http://vs-docker.informatik.haw-hamburg.de:18192/banks/"+"/"+game.getGameid()).asString();
-            Unirest.put("http://vs-docker.informatik.haw-hamburg.de:18193/boards/"+"/"+game.getGameid()).asString();
+            components.setBoard(req.queryParams("boardUri"));
+            components.setEvent(req.queryParams("eventUri"));
+            games.add(game);
+            Unirest.put(bankaddress+"/"+game.getGameid()).asString();
+            Unirest.put(boardaddress+"/"+game.getGameid()).asString();
 
 
             Gson gson = new GsonBuilder()
@@ -58,13 +62,19 @@ public class GameService {
             res.header("Content-Type", "application/json");
             Gson gson = new GsonBuilder()
                     .create();
-            return gson.toJson(games.getGame(req.params(":gameid")));
+            for(Game game : games){
+                if(game.getGameid().equals(req.params(":gameid"))) return gson.toJson(game);
+            }
+            return "";
         });
 
         get("/games/:gameid/players", (req, res) -> {
             res.status(200);
             res.header("Content-Type", "application/json");
-            Game game = games.getGame(req.params(":gameid"));
+            Game game = null;
+            for(Game g : games){
+                if(g.getGameid().equals(req.params(":gameid"))) game = g;
+            }
             Gson gson = new GsonBuilder().create();
             return gson.toJson(game.getPlayers());
         });
@@ -72,7 +82,10 @@ public class GameService {
         get("/games/:gameid/players/:playerid", (req, res) -> {
             res.status(200);
             res.header("Content-Type", "application/json");
-            Game game = games.getGame(req.params(":gameid"));
+            Game game = null;
+            for(Game g : games){
+                if(g.getGameid().equals(req.params(":gameid"))) game = g;
+            }
             Gson gson = new GsonBuilder()
                     .setExclusionStrategies(new CustomExclusionStrategy("restopoly.resources.Player.position"))
                     .create();
@@ -83,19 +96,31 @@ public class GameService {
             Player player = new Player(req.params(":playerid"));
             player.setName(req.queryParams("name"));
             player.setUri(req.queryParams("uri"));
-            Game game = games.getGame(req.params(":gameid"));
+            player.setPosition(0);
+            Unirest.put(boardaddress+"/"+req.params(":gameid")+"/players/"+req.params(":playerid")).
+                    body(new Gson().toJson(player)).asString();
+            Game game = null;
+            for(Game g : games){
+                if(g.getGameid().equals(req.params(":gameid"))) game = g;
+            }
             game.addPlayer(player);
             return "";
         });
 
         delete("/games/:gameid/players/:playerid", (req, res) -> {
-            Game game = games.getGame(req.params(":gameid"));
+            Game game = null;
+            for(Game g : games){
+                if(g.getGameid().equals(req.params(":gameid"))) game = g;
+            }
             game.deletePlayer(req.params(":playerid"));
             return "";
         });
 
         put("/games/:gameid/players/:playerid/ready", (req, res) -> {
-            Game game = games.getGame(req.params(":gameid"));
+            Game game = null;
+            for(Game g : games){
+                if(g.getGameid().equals(req.params(":gameid"))) game = g;
+            }
             Player player = game.getPlayer(req.params(":playerid"));
             player.setReady(true);
             for (Player p : game.getPlayers()) {
@@ -107,7 +132,10 @@ public class GameService {
         });
 
         get("/games/:gameid/players/:playerid/ready", (req, res) -> {
-            Game game = games.getGame(req.params(":gameid"));
+            Game game = null;
+            for(Game g : games){
+                if(g.getGameid().equals(req.params(":gameid"))) game = g;
+            }
             Player player = game.getPlayer(req.params(":playerid"));
             Gson gson = new GsonBuilder().create();
             return gson.toJson(player.isReady());

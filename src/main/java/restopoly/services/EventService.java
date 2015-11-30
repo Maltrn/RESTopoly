@@ -4,12 +4,12 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
-import restopoly.CustomExclusionStrategy;
-import restopoly.Service;
+import restopoly.util.CustomExclusionStrategy;
+import restopoly.util.Service;
 import restopoly.resources.Event;
-import restopoly.resources.Events;
 import restopoly.resources.Subscription;
-import restopoly.resources.Subscriptions;
+
+import java.util.ArrayList;
 
 import static spark.Spark.delete;
 import static spark.Spark.get;
@@ -22,8 +22,8 @@ public class EventService {
 
     public static void main(String[] args) {
 
-        Events events = new Events();
-        Subscriptions subscriptions = new Subscriptions();
+        ArrayList<Event> events = new ArrayList<Event>();
+        ArrayList<Subscription> subscriptions = new ArrayList<Subscription>();
 
         get("/events", (req, res) -> {
             res.status(200);
@@ -38,8 +38,8 @@ public class EventService {
             Gson gson = new GsonBuilder().create();
             Event event = gson.fromJson(req.body(), Event.class);
             event.setGameid(req.queryParams("gameid"));
-            events.addEvent(event);
-            for(Subscription subscription:subscriptions.getSubscriptions()){
+            events.add(event);
+            for(Subscription subscription:subscriptions){
                 if(subscription.getEvent().getName().equals(event.getName()) &&
                         subscription.getEvent().getGameid().equals(event.getGameid())){
                 Unirest.post(subscription.getUri()).body(gson.toJson(event)).asString();
@@ -54,22 +54,30 @@ public class EventService {
         });
 
         delete("/events", (req, res) -> {
-            for (Event event: events.getEvents()){
+            for (Event event: events){
                 if(event.getGameid().equals(req.queryParams("gameid"))){
-                    events.deleteEvent(event);
+                    events.remove(event);
                 }
             }
             return "";
+        });
+
+        get("/events/subscriptions", (req, res) -> {
+            res.status(200);
+            res.header("Content-Type", "application/json");
+            Gson gson = new GsonBuilder().create();
+            return gson.toJson(subscriptions);
         });
 
         post("/events/subscriptions", (req, res) -> {
             res.status(201);
             res.header("Content-Type", "application/json");
             Gson gson = new GsonBuilder().create();
-            Subscription subscription = gson.fromJson(req.body(), Subscription.class);
-            subscriptions.addSubscription(subscription);
-            return "";
-        });
+                    Subscription subscription = gson.fromJson(req.body(), Subscription.class);
+                    subscriptions.add(subscription);
+                    return "";
+                });
+
 
         try {
             Unirest.post("http://vs-docker.informatik.haw-hamburg.de:8053/services")
@@ -78,8 +86,8 @@ public class EventService {
                     .queryString("name", "EVENT")
                     .queryString("description", "Event Service")
                     .queryString("service", "events")
-                    .queryString("uri", "https://vs-docker.informatik.haw-hamburg.de/ports/18195/events")
-                    .body(new Gson().toJson(new Service("EVENT", "Event Service", "events", "https://vs-docker.informatik.haw-hamburg.de/ports/18195/events")))
+                    .queryString("uri", "https://vs-docker.informatik.haw-hamburg.de/ports/18194/events")
+                    .body(new Gson().toJson(new Service("EVENT", "Event Service", "events", "https://vs-docker.informatik.haw-hamburg.de/ports/18194/events")))
                     .asJson();
         } catch (UnirestException e) {
             e.printStackTrace();

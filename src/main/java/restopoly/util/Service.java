@@ -1,4 +1,4 @@
-package restopoly;
+package restopoly.util;
 
 /**
  * Created by Krystian.Graczyk on 25.11.15.

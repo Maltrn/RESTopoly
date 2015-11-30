@@ -2,13 +2,11 @@ package restopoly.services;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
-import restopoly.Service;
+import restopoly.util.Service;
 import restopoly.resources.Roll;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import static spark.Spark.get;
-import static spark.Spark.port;
 
 /**
  * Created by Krystian.Graczyk on 05.11.15.
