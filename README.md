@@ -1,15 +1,15 @@
 # RESTopoly
 
 TODO bis 16.12:  
-1. Die Clientseite erweitern, sodass Events erstellt werden können usw.  
-2. Die ganzen neuen Funktionen testen  
-3. Die ganzen Banken betreffenden Services transaktional machen und Aufgabe 3.4B  
-4. Alle Services mit Kommentaren zur Übersichtlichkeit versehen
+1. Verbindung zurück zum "Player Service" hinbekommen  
+2. Die ganzen Banken betreffenden Services transaktional machen/refactorn und Aufgabe 3.4B  
+3. Alle Services mit Kommentaren zur Übersichtlichkeit versehen  
+4. (um Board Methoden usw. der Anderen Gruppe erweitern)  
   
 Probleme/Unklarheiten:  
-Soll der Client nun der richtige Client für das endgültige Spiel sein oder die Vollmacht über das Spiel haben also auch transferFromTo aufrufen können usw.  
 Soll der Client mehrere Spiele erzeugen können und mehrere Spieler, um das ganze besser testen zu können oder wie im späteren "realen" Umfeld nur jeweils eins?  
 Wenn jeder Client einen eigenen Service anbieten soll unter einer URL dann wahrscheinlich nur ein Spiel und Spieler.   
-Wie soll die Spieler Service URI aussehen/wo soll man die hernehmen, damit die Kommunikation mit den anderen Services klappt?  
-Wie soll man die URI flexibel aus dem YellowPage Service auslesen können, wenn die ID der Services jedes mal eine höhere ist sobald man eine neue Version der Services hochläd?  
+Die Verbindung zurück zum Player Service/Client kann weder über die öffentliche IP Adresse+Port noch über die IP Adresse+Port aus den Request Informationen, die der Client an die Services sendet, aufgebaut werden.  
+Wie soll man die URI flexibel aus dem Yellowpage Service auslesen können, wenn die ID der Services jedes mal eine höhere ist sobald man eine neue Version der Services hochläd?  
+Die Services sind vom Client also von außen nur über https zu erreichen intern funktioniert jedoch nur http. Welche Uri soll nun an den Yellowpage Service übermittelt werden? Wenn man überall die Uri aus den Yellowpages nimmt kann momentan eine der beiden Kommunikationsformen automatisch nicht funktionieren.  
 (Da sind bestimmt noch mehr Dinge die mir gerade nicht einfallen)  
