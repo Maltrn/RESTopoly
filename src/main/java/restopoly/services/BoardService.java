@@ -189,7 +189,7 @@ public class BoardService {
             return gson.toJson(jsonObject);
         });
 
-        //TODO - ggf. eine Variable für die Referenz in Place anlegen
+//      TODO - ggf. eine Variable für die Referenz in Place anlegen
 //      List of available place
 //      response: ["/boards/42/places/0", "/boards/42/places/1"]
         get("/boards/:gameid/places", (req, res) -> {
