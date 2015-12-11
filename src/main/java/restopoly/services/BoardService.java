@@ -1,12 +1,11 @@
 package restopoly.services;
 
 import com.google.gson.Gson;
+import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
-import restopoly.resources.Board;
-import restopoly.resources.Field;
-import restopoly.resources.Place;
-import restopoly.resources.Player;
+import org.json.JSONObject;
+import restopoly.resources.*;
 import restopoly.util.Service;
 
 import java.util.ArrayList;
@@ -17,10 +16,13 @@ import static spark.Spark.*;
  * Created by Krystian.Graczyk on 27.11.15.
  */
 public class BoardService {
+    private static ArrayList<Board> boards = new ArrayList<Board>();
+    private static String EVENTSADDRESS = "https://vs-docker.informatik.haw-hamburg.de/ports/18194/events";
+
 
     public static void main(String[] args) {
 
-        ArrayList<Board> boards = new ArrayList<Board>();
+
         String gameaddress = "http://vs-docker.informatik.haw-hamburg.de:18191/games/";
 
         get("/boards", (req, res) -> {
@@ -54,10 +56,11 @@ public class BoardService {
         });
 
         get("/boards/:gameid", (req, res) -> {
-            res.status(200);
+            res.status(404);
             res.header("Content-Type", "application/json");
             for(Board b : boards){
                 if(b.getGameid().equals(req.params(":gameid")))
+                    res.status(200);
                     return new Gson().toJson(b);
             }
             return "";
@@ -75,11 +78,12 @@ public class BoardService {
 //        returns a list of all player positions
 //        response: [{"id":"Mario","place":"/boards/42/places/4", "position":4}]
         get("/boards/:gameid/players", (req, res) -> {
-            res.status(200);
+            res.status(404);
             res.header("Content-Type", "application/json");
             ArrayList<Player> result = new ArrayList<Player>();
             for(Board b : boards){
                 if(b.getGameid().equals(req.params(":gameid")))
+                    res.status(200);
                     for(Field f :b.getFields()){
                         for(Player p : f.getPlayers()) {
                             result.add(p);
@@ -89,17 +93,17 @@ public class BoardService {
             return new Gson().toJson(result);
         });
 
-        //TODO - Konstruktion des Boards generell richtig?
 //        Gets a player
 //        response: {"id":"Mario","place":"/boards/42/places/4", "position":4}
         get("/boards/:gameid/players/:playerid", (req, res) -> {
-            res.status(200);
+            res.status(404);
             res.header("Content-Type", "application/json");
             for(Board b : boards){
                 if(b.getGameid().equals(req.params(":gameid")))
                     for(Field f :b.getFields()){
                         for(Player p : f.getPlayers()) {
                             if (p.getId().equals(req.params(":playerid"))) {
+                                res.status(200);
                                 return new Gson().toJson(p);
                             }
                         }
@@ -125,7 +129,6 @@ public class BoardService {
             return "";
         });
 
-        //TODO
 //      moves a player relative to its current position
 //      response: -
         post("/boards/:gameid/players/:playerid/move", (req, res) -> {
@@ -140,7 +143,13 @@ public class BoardService {
                                 p.setPosition(p.getPosition() + Integer.valueOf(req.params(":number"))); // ggf. muss hier noch was angepasst werden
                                 Place newPlace = new Place("boards/" + req.params(":gameid") +"/places/" + i);
                                 p.setPlace(newPlace);
-//                              TODO die Playerposition im Gameservice muss ebenfalls aktualisiert werden oder?
+//                              Position des Spielers wird im Gameservice ebenfalls aktualisiert
+                                Gson gson = new Gson();
+                                HttpResponse playerResponse  = Unirest.get(gameaddress + "/" + req.params(":gameid") + "/players/" + req.params(":playerid")).asJson();
+                                Player newPlayer = gson.fromJson(playerResponse.getBody().toString(), Player.class);
+                                newPlayer.setPlace(newPlace);
+                                Unirest.delete(gameaddress + "/" + req.params(":gameid") + "/players/" + req.params(":playerid"));
+                                Unirest.put(gameaddress + "/" + req.params(":gameid") + "/players/" + req.params(":playerid")).body(new Gson().toJson(newPlayer)).asString();
                             }
                         }
                     }
@@ -150,15 +159,34 @@ public class BoardService {
 
         //TODO - was soll damit gemeint sein
 //      gives a throw of dice from the player to the board - Returns the new board state and possible options to take
-//      response: { player: "/boards/42/players/mario", board: { "fields":[{"place": "/boards/42/places/0" ,"players":[]},
+//      response: { player: "/boards/42/players/mario",
+//            board: { "fields":[{"place": "/boards/42/places/0" ,"players":[]},
 //            {"place": "/boards/42/places/1" ,"players":["/boards/42/players/mario"]},
 //            {"place": "/boards/42/places/2" ,"players":[]},
 //            {"place": "/boards/42/places/3" ,"players":[]},
-//            {"place": "/boards/42/places/4","players":[]} ] }, events: [ { action: "transfer", uri: "/banks/42/transfer/12345",
-//              name:"Bank Transfer", reason:"Rent for Badstrasse" } ] }
+//            {"place": "/boards/42/places/4","players":[]} ] },
+//            events: [ { action: "transfer", uri: "/banks/42/transfer/12345",
+//            name:"Bank Transfer", reason:"Rent for Badstrasse" } ] }
         post("/games/:gameid/players/:playerid/roll", (req, res) -> {
+            res.status(200);
+            res.header("Content-Type", "application/json");
+            String p_ID = req.params(":playerid");
+            String g_ID = req.params(":gameid");
+            Gson gson = new Gson();
+            Player p= getPlayer(g_ID, p_ID);
+            Board b = getGameB(g_ID);
+            JSONObject jsonObject = null;
+            if (b!=null && p != null){
+                jsonObject = new JSONObject();
+                jsonObject.put("player", "/boards/"+g_ID+"/players/"+p.getName());
+                jsonObject.put("board", b);
 
-            return "";
+                HttpResponse eventRes  = Unirest.get(EVENTSADDRESS + "/event/"+g_ID).asJson();
+                Event event = gson.fromJson(eventRes.getBody().toString(), Event.class);
+
+                jsonObject.put("events", event);
+            }
+            return gson.toJson(jsonObject);
         });
 
         //TODO - ggf. eine Variable für die Referenz in Place anlegen
@@ -173,6 +201,7 @@ public class BoardService {
                     for(int i = 0; i < b.getFields().size(); i++){
                         // gibt aktuell die Places des Fields ohne Player zurück
                         if(b.getField(i).getPlayers().size() == 0) {
+//                          TODO - welche Places sind available?
                             result.add("boards/" + req.params(":gameid") + "/places/" + i);
                         }
                     }
@@ -226,5 +255,28 @@ public class BoardService {
         } catch (UnirestException e) {
             e.printStackTrace();
         }
+    }
+
+
+    private static Player getPlayer(String gameID, String playerId) {
+        for (Board b : boards) {
+            if (b.getGameid().equals(gameID))
+                for (int i = 0; i < b.getFields().size(); i++) {
+                    for (Player p : b.getField(i).getPlayers()) {
+                        if (p.getId().equals(playerId)) {
+                            return p;
+                        }
+                    }
+                }
+        }
+        return null;
+    }
+
+    private static Board getGameB(String game_id) {
+        for (Board b : boards) {
+            if (b.getGameid().equals(game_id))
+                return b;
+        }
+        return null;
     }
 }

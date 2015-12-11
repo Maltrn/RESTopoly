@@ -21,6 +21,7 @@ public class GameService {
         ArrayList<Game> games = new ArrayList<Game>();
         String bankaddress= "http://vs-docker.informatik.haw-hamburg.de:18192/banks/";
         String boardaddress = "http://vs-docker.informatik.haw-hamburg.de:18193/boards/";
+
         get("/games", (req, res) -> {
             res.status(200);
             res.header("Content-Type", "application/json");
@@ -128,7 +129,10 @@ public class GameService {
             }
             game.setStarted(true);
             Gson gson = new GsonBuilder().create();
-            return gson.toJson(player);
+//          TODO - Rückgabe laut raml -> nichts
+//            return gson.toJson(player);
+            return "";
+
         });
 
         get("/games/:gameid/players/:playerid/ready", (req, res) -> {
@@ -141,6 +145,27 @@ public class GameService {
             return gson.toJson(player.isReady());
         });
 
+//       TODO - gets the currently active player that shall take action
+        get("/games/:gameid/players/current", (req, res) -> {
+            return "";
+        });
+
+//      TODO - gets the player holding the turn mutex
+        get("/games/:gameid/players/turn", (req, res) -> {
+            return "";
+        });
+
+//      TODO - tries to aquire the turn mutex
+//      responses: 200 - already holding the mutex, 201 - aquired the mutex, 409 - already aquired by an other player
+//      Rückgabe Player
+        put("/games/:gameid/players/turn", (req, res) -> {
+            return "";
+        });
+
+//      TODO - releases the mutex
+        delete("/games/:gameid/players/turn", (req, res) -> {
+            return "";
+        });
 
         try {
             Unirest.post("http://vs-docker.informatik.haw-hamburg.de:8053/services")

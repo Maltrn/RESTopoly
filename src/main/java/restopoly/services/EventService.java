@@ -32,6 +32,19 @@ public class EventService {
             return gson.toJson(events);
         });
 
+        get("/event/:gameid", (req, res) -> {
+            res.status(200);
+            res.header("Content-Type", "application/json");
+            Gson gson = new GsonBuilder().create();
+            for (Event event : events) {
+                if(event.getGameid().equals(req.params(":gameid"))){
+                    return gson.toJson(event);
+                }
+            }
+            return "";
+        });
+
+
         post("/events", (req, res) -> {
             res.status(201);
             res.header("Content-Type", "application/json");
