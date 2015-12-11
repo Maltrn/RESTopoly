@@ -3,7 +3,9 @@ package restopoly.services;
 import com.google.gson.Gson;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
+import org.json.JSONObject;
 import restopoly.resources.Broker;
+import restopoly.resources.Event;
 
 import java.util.ArrayList;
 
@@ -17,35 +19,40 @@ public class BrokerService {
     private static ArrayList<Broker> brokers = new ArrayList();
 
     public static void main(String[] args) {
-        String BANKSADDRESS = "https://vs-docker.informatik.haw-hamburg.de/ports/18192/banks";
+        String bankaddress = "https://vs-docker.informatik.haw-hamburg.de/ports/18192/banks";
+        String eventaddress = "https://vs-docker.informatik.haw-hamburg.de/ports/18194/events";
 
 //#############################    Aufgabenstellung A3    #####################################
 
-//      TODO - places a broker
+//      places a broker
         put("/brokers/:gameid", (req, res) -> {
             res.status(200);
             res.header("Content-Type", "application/json");
             Broker newBroker = new Broker(req.params(":gameid"));
             brokers.add(newBroker);
             return new Gson().toJson(newBroker);
+//            TODO - Rückgabe soll das GameObjekt sein
         });
 
-//      TODO - Registers the place with the broker, won't change anything if already registered
+//      Registers the place with the broker, won't change anything if already registered
         put("/brokers/:gameid/places/:placeid", (req, res) -> {
-            res.status(200);
+            res.status(404);
             res.header("Content-Type", "application/json");
             for (Broker broker : brokers) {
                 if(broker.getGameid().equals(req.params(":gameid"))){
-                    if(broker.containField(req.params(":placeId")))
+                    if(broker.containField(req.params(":placeId"))) {
                         broker.putField(req.params(":placeId"));
+                        res.status(200);
+//                      TODO - Rückgabe muss angepasst werden
+                    }
                 }
             }
             return "";
         });
 
-//      TODO - indicates, that the player has visited this place, may be resulting in money transfer
+//      indicates, that the player has visited this place, may be resulting in money transfer
         post("/brokers/:gameid/places/:placeid/visit/:playerid", (req, res) -> {
-            res.status(200);
+            res.status(404);
             res.header("Content-Type", "application/json");
             String g_id = req.params(":gameid");
             String p_id = req.params(":placeid");
@@ -58,7 +65,18 @@ public class BrokerService {
                     String ownerID = tBroker.getOwnerID(p_id);
                     if (ownerID != null){
                         String tPrice = tBroker.getPrice(p_id);
-                        Unirest.post(BANKSADDRESS + "/" + g_id + "/transfer/from/" + pl_id + "/to/" + ownerID + "/" + tPrice).asJson();
+                        Unirest.post(bankaddress + "/" + g_id + "/transfer/from/" + pl_id + "/to/" + ownerID + "/" + tPrice).asJson();
+
+                        res.status(200);
+                        Gson gson = new Gson();
+                        JSONObject jsonObject = null;
+                        jsonObject = new JSONObject();
+                        HttpResponse eventRes  = Unirest.get(eventaddress + "/event/"+req.params(":gameid")).asJson();
+                        Event event = gson.fromJson(eventRes.getBody().toString(), Event.class);
+                        res.status(200);
+                        jsonObject.put("events", event);
+                        jsonObject.put("player", pl_id);
+                        return gson.toJson(jsonObject);
                     }
                 }
             }catch (Exception e){
@@ -71,7 +89,7 @@ public class BrokerService {
 
 //      Todo - Buy the place in question. It will fail if it is not for sale
         post("/brokers/:gameid/places/:placeid/owner", (req, res) -> {
-            res.status(200);
+            res.status(409);
             res.header("Content-Type", "application/json");
             String g_id = req.params(":gameid");
             String p_id = req.params(":placeid");
@@ -81,13 +99,24 @@ public class BrokerService {
                 if (tBroker != null){
                     boolean free = tBroker.isAvalible(p_id);
                     if (free){
-                        //ToDO wie wie kommt man an den PlayerId welcher das Feld Kaufen soll
+                        //ToDO - wie kommt man an den PlayerId welcher das Feld Kaufen soll
                         String url = "/banks/:gameid/transfer/from/:from/:amount";
                         String tPrice = tBroker.getPrice(p_id);
                         String playerID= "";
-                        HttpResponse response = Unirest.post(BANKSADDRESS + "/" + g_id + "/transfer/from/" + playerID + "/" + tPrice).asJson();
+                        HttpResponse response = Unirest.post(bankaddress + "/" + g_id + "/transfer/from/" + playerID + "/" + tPrice).asJson();
                         if(response.getStatus() == 201){
                             tBroker.buyField(p_id,playerID);
+
+                            Gson gson = new Gson();
+                            JSONObject jsonObject = null;
+                            jsonObject = new JSONObject();
+                            HttpResponse eventRes  = Unirest.get(eventaddress + "/event/"+req.params(":gameid")).asJson();
+                            Event event = gson.fromJson(eventRes.getBody().toString(), Event.class);
+                            res.status(200);
+                            jsonObject.put("events", event);
+//                            TODO - Welcher Player??
+                            jsonObject.put("player", playerID);
+                            return gson.toJson(jsonObject);
                         }
                     }
                 }
