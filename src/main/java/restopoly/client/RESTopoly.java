@@ -28,6 +28,7 @@ public class RESTopoly {
     private static String DICEADDRESS;
     private static String BOARDSADDRESS;
     private static String EVENTSADDRESS;
+    private static String BROKERSADDRESS;
     private static String GAMEID;
     private static Player PLAYER;
     private static boolean TURN = true;
@@ -43,6 +44,7 @@ public class RESTopoly {
                 .queryString("bankUri", BANKSADDRESS)
                 .queryString("boardUri", BOARDSADDRESS)
                 .queryString("eventUri", EVENTSADDRESS)
+                .queryString("brokerUri", BROKERSADDRESS)
                 .asJson();
         Gson gson = new Gson();
         Game game = gson.fromJson(response.getBody().toString(), Game.class);
@@ -129,6 +131,7 @@ public class RESTopoly {
         BANKSADDRESS = "https://vs-docker.informatik.haw-hamburg.de/ports/18192/banks";
         BOARDSADDRESS = "https://vs-docker.informatik.haw-hamburg.de/ports/18193/boards";
         EVENTSADDRESS = "https://vs-docker.informatik.haw-hamburg.de/ports/18194/events";
+        BROKERSADDRESS = "https://vs-docker.informatik.haw-hamburg.de/ports/18195/broker";
 
 
         RESTopoly client = new RESTopoly();

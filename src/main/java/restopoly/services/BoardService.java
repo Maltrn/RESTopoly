@@ -24,6 +24,7 @@ public class BoardService {
 
 
         String gameaddress = "http://vs-docker.informatik.haw-hamburg.de:18191/games/";
+        String brokeraddress = "https://vs-docker.informatik.haw-hamburg.de/ports/18195/broker";
 
         get("/boards", (req, res) -> {
             res.status(200);
@@ -41,6 +42,8 @@ public class BoardService {
 
             board.setFields(fields);
             boards.add(board);
+//          TODO - Broker anlegen
+            Unirest.put(brokeraddress + "/" + req.params(":gameid"));
             return "";
         });
 
