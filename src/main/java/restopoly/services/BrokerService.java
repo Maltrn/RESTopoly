@@ -1,6 +1,7 @@
 package restopoly.services;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import org.json.JSONObject;
@@ -30,8 +31,10 @@ public class BrokerService {
             res.header("Content-Type", "application/json");
             Broker newBroker = new Broker(req.params(":gameid"));
             brokers.add(newBroker);
+
+
             return new Gson().toJson(newBroker);
-//            TODO - Rückgabe soll das GameObjekt sein
+
         });
 
 //      Registers the place with the broker, won't change anything if already registered
@@ -43,7 +46,14 @@ public class BrokerService {
                     if(broker.containField(req.params(":placeId"))) {
                         broker.putField(req.params(":placeId"));
                         res.status(200);
-//                      TODO - Rückgabe muss angepasst werden
+//                      TODO - Von wo kommen die anderen Werte?
+                        JSONObject jsonObject = broker.getReturnCode(req.params(":placId"));
+
+                        JSONObject tObjt = new JSONObject();
+                        tObjt.put("id", "estaste");
+                        tObjt.put("properties", jsonObject);
+
+                        return new Gson().toJson(tObjt);
                     }
                 }
             }
@@ -64,7 +74,7 @@ public class BrokerService {
                 if (tBroker != null){
                     String ownerID = tBroker.getOwnerID(p_id);
                     if (ownerID != null){
-                        String tPrice = tBroker.getPrice(p_id);
+                        String tPrice = tBroker.getRent(p_id);
                         Unirest.post(bankaddress + "/" + g_id + "/transfer/from/" + pl_id + "/to/" + ownerID + "/" + tPrice).asJson();
 
                         res.status(200);

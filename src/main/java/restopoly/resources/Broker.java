@@ -1,5 +1,7 @@
 package restopoly.resources;
 
+import org.json.JSONObject;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -9,14 +11,12 @@ import java.util.Map;
 public class Broker {
 
     public Broker(){
-
     }
 
     private Broker(String gameID, Map<String, owner> fieldMap){
         this.gameid = gameID;
         this.fieldMap = fieldMap;
     }
-
 
     String gameid;
     private Map<String, owner> fieldMap = new HashMap<>();
@@ -32,7 +32,6 @@ public class Broker {
     public void setGameid(String gameid) {
         this.gameid = gameid;
     }
-
 
     public boolean containField(String placeID){
         return fieldMap.containsKey(placeID);
@@ -66,7 +65,6 @@ public class Broker {
         return false;
     }
 
-
     public void buyField(String placeID, String playerID){
         if (containField(placeID)){
             owner tOwner = fieldMap.remove(placeID);
@@ -74,6 +72,68 @@ public class Broker {
             tOwner.setIsfree(false);
             fieldMap.put(placeID, tOwner);
         }
+    }
+
+    public String getRent(String placeID) {
+        if (containField(placeID)){
+            owner tOwner = fieldMap.get(placeID);
+            return tOwner.getRent();
+
+        }
+        return  null;
+    }
+
+    public int[] getRentAry(String placeID) {
+        if (containField(placeID)){
+            owner tOwner = fieldMap.get(placeID);
+            return tOwner.getRent_level_ary();
+        }
+        return  null;
+    }
+
+    public int[] getCostAry(String placeID) {
+        if (containField(placeID)){
+            owner tOwner = fieldMap.get(placeID);
+            return tOwner.getCoast_level_ary();
+        }
+        return  null;
+    }
+
+    public JSONObject getReturnCode(String placeId){
+        JSONObject result = null;
+        if(containField(placeId)){
+            result.put("place", placeId);
+            result.put("owner", getOwnerID(placeId));
+            result.put("value", getPrice(placeId));
+            result.put("rent", getRentAry(placeId));
+            result.put("cost", getCostAry(placeId));
+            result.put("houses", getHouses(placeId));
+            result.put("visit", getVisit(placeId));
+            result.put("hypocredit", getHypoCredit(placeId));
+        }
+        return result;
+    }
+
+    public String getVisit(String placeId) {
+        if (containField(placeId)){
+            return fieldMap.get(placeId).getVisits();
+        }
+        return null;
+    }
+
+    public String getHypoCredit(String placeId){
+        if (containField(placeId)){
+            return fieldMap.get(placeId).getHypocredit();
+        }
+        return null;
+    }
+
+    public int getHouses(String placeId) {
+        if (containField(placeId)){
+            owner tOwner = fieldMap.get(placeId);
+            return tOwner.getHouses();
+        }
+        return -1;
     }
 
     public Broker createCopy() {
@@ -107,10 +167,65 @@ public class Broker {
             this.price = price;
         }
 
-        private String playerName = null;
+
+        public void setRent(String rent){
+            this.rent = rent;
+        }
+
+
+        public String getRent(){
+            return rent;
+        }
+
+        public int[] getRent_level_ary() {
+            return rent_level_ary;
+        }
+
+        public void setRent_level_ary(int[] rent_level_ary) {
+            this.rent_level_ary = rent_level_ary;
+        }
+
+        public int[] getCoast_level_ary() {
+            return coast_level_ary;
+        }
+
+        public void setCoast_level_ary(int[] coast_level_ary) {
+            this.coast_level_ary = coast_level_ary;
+        }
+
+        public int getHouses() {
+            return houses;
+        }
+
+        public void setHouses(int houses) {
+            this.houses = houses;
+        }
+
+        public String getVisits() {
+            return visits;
+        }
+
+        public void setVisits(String visits) {
+            this.visits = visits;
+        }
+
+        public String getHypocredit() {
+            return hypocredit;
+        }
+
+        public void setHypocredit(String hypocredit) {
+            this.hypocredit = hypocredit;
+        }
+
         private boolean isfree=true;
         private String price;
-
+        private String rent;
+        private int[] rent_level_ary;
+        private int[] coast_level_ary;
+        private int houses;
+        private String visits;
+        private String hypocredit;
+        private String playerName = null;
 
 
     }
