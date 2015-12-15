@@ -1,7 +1,6 @@
 package restopoly.services;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonObject;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import org.json.JSONObject;
@@ -47,7 +46,7 @@ public class BrokerService {
                         broker.putField(req.params(":placeId"));
                         res.status(200);
 //                      TODO - Von wo kommen die anderen Werte?
-                        JSONObject jsonObject = broker.getReturnCode(req.params(":placId"));
+                        JSONObject jsonObject = broker.getReturnCode(req.params(":placeId"));
 
                         JSONObject tObjt = new JSONObject();
                         tObjt.put("id", "estaste");

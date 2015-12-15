@@ -7,7 +7,6 @@ import java.util.*;
  */
 public class Mutex {
 
-
     // GameID, PlayerId
     private Map<String, Map<String, InnerMutex>> mapMutex;
 
@@ -15,12 +14,11 @@ public class Mutex {
         mapMutex = new HashMap<String,Map<String, InnerMutex>>();
     }
 
-
     private boolean containGameMutex(String gameId){
         return mapMutex.containsKey(gameId);
     }
 
-    public String hasMutex(String gameId){
+    public String playerWithMutex(String gameId){
         if (mapMutex.containsKey(gameId)){
             Iterator<Map.Entry<String, InnerMutex>> iterator = mapMutex.get(gameId).entrySet().iterator();
             while(iterator.hasNext()){
@@ -33,7 +31,7 @@ public class Mutex {
         return null;
     }
 
-    public boolean hasMutex(String playerId, String gameId){
+    public boolean playerHasMutex(String gameId, String playerId){
         boolean result = mapMutex.containsKey(gameId);
         if (result){
             result = mapMutex.get(gameId).containsKey(playerId);
@@ -45,7 +43,7 @@ public class Mutex {
         return result;
     }
 
-    public void chanceMutexToNextPlayer(String gameId){
+    public void changeMutexToNextPlayer(String gameId){
         if(containGameMutex(gameId)){
             String playerId = getNextPlayer(gameId);
             InnerMutex mutex = mapMutex.get(gameId).get(playerId);
@@ -53,7 +51,7 @@ public class Mutex {
         }
     }
 
-    public void chanceMutexToPlayer(String gameId, String playerId){
+    public void changeMutexToPlayer(String gameId, String playerId){
         if(containGameMutex(gameId)){
             Iterator<Map.Entry<String, InnerMutex>> iterator = mapMutex.get(gameId).entrySet().iterator();
             boolean mutex_is_free = true;
@@ -104,20 +102,39 @@ public class Mutex {
     }
 
     public void addNextTurnPlayer(String gameId, String playerId){
-
-
+//        TODO -
     }
 
+    private boolean containPlayer(String gameId, String player){
+        return containGameMutex(gameId) && mapMutex.get(gameId).containsKey(player);
+    }
 
+    public void addPlayer(String gameId, String playerId){
+        if (containGameMutex(gameId)){
+            if(!containPlayer(gameId, playerId))
+                mapMutex.get(gameId).put(playerId, new InnerMutex());
+        }
+    }
+
+    public void removePlayer(String gameId, String playerId){
+        if (containGameMutex(gameId)){
+            if(containPlayer(gameId, playerId))
+                mapMutex.get(gameId).remove(playerId);
+        }
+    }
 
     private class InnerMutex{
 
+        private boolean hasMutex;
+        private int turns;
+        private boolean waitOfMutex;
+
         public boolean isMutexing() {
-            return mutexing;
+            return hasMutex;
         }
 
-        public void setMutexing(boolean mutexing) {
-            this.mutexing = mutexing;
+        public void setMutexing(boolean hasMutex) {
+            this.hasMutex = hasMutex;
         }
 
         public int getTurns() {
@@ -135,15 +152,6 @@ public class Mutex {
         public void setWaitOfMutex(boolean waitOfMutex){
             this.waitOfMutex = waitOfMutex;
         }
-
-
-        private boolean mutexing;
-        private int turns;
-        private boolean waitOfMutex;
-
-
     }
-
-
 
 }

@@ -16,9 +16,12 @@ import java.util.ArrayList;
 import static spark.Spark.*;
 
 public class GameService {
+    private static ArrayList<Game> games = new ArrayList<Game>();
+
     public static void main(String[] args) {
 
-        ArrayList<Game> games = new ArrayList<Game>();
+        Mutex mutex = new Mutex();
+
         String bankaddress= "http://vs-docker.informatik.haw-hamburg.de:18192/banks/";
         String boardaddress = "http://vs-docker.informatik.haw-hamburg.de:18193/boards/";
 
@@ -46,6 +49,7 @@ public class GameService {
             components.setBoard(req.queryParams("boardUri"));
             components.setEvent(req.queryParams("eventUri"));
             games.add(game);
+            mutex.addGame(game.getGameid());
             Unirest.put(bankaddress+"/"+game.getGameid()).asString();
             Unirest.put(boardaddress+"/"+game.getGameid()).asString();
 
@@ -105,6 +109,7 @@ public class GameService {
                 if(g.getGameid().equals(req.params(":gameid"))) game = g;
             }
             game.addPlayer(player);
+            mutex.addPlayer(game.getGameid(), player.getId());
             return "";
         });
 
@@ -114,9 +119,11 @@ public class GameService {
                 if(g.getGameid().equals(req.params(":gameid"))) game = g;
             }
             game.deletePlayer(req.params(":playerid"));
+            mutex.removePlayer(req.params(":gameid"), req.params(":playerid"));
             return "";
         });
 
+//      TODO - Mutex berücksichtigen?
         put("/games/:gameid/players/:playerid/ready", (req, res) -> {
             Game game = null;
             for(Game g : games){
@@ -145,25 +152,54 @@ public class GameService {
             return gson.toJson(player.isReady());
         });
 
-//       TODO - gets the currently active player that shall take action
+//       gets the currently active player that shall take action
+//        res 200 - { id:mario, name:"Mario", uri:"http://localhost:4567/player/mario", ready:false }
         get("/games/:gameid/players/current", (req, res) -> {
+            res.status(400);
+            String gameid = req.params(":gameid");
+            String playerid = mutex.getNextPlayer(gameid);
+            if (!playerid.isEmpty()) {
+                res.status(200);
+                Gson gson = new Gson();
+                return gson.toJson(getGame(gameid).getPlayer(playerid));
+            }
             return "";
         });
 
-//      TODO - gets the player holding the turn mutex
+//      gets the player holding the turn mutex
+//      res 200 - { id:mario, name:"Mario", uri:"http://localhost:4567/player/mario", ready:false }
+//      res 404
         get("/games/:gameid/players/turn", (req, res) -> {
+            res.status(400);
+            String gameid = req.params(":gameid");
+            String playerid = mutex.playerWithMutex(gameid);
+            if (!playerid.isEmpty()) {
+                res.status(200);
+                Gson gson = new Gson();
+                return gson.toJson(getGame(gameid).getPlayer(playerid));
+            }
             return "";
         });
 
 //      TODO - tries to aquire the turn mutex
-//      responses: 200 - already holding the mutex, 201 - aquired the mutex, 409 - already aquired by an other player
-//      Rückgabe Player
+//      responses: 200 - already holding the mutex,
+//      201 - aquired the mutex,
+//      409 - already aquired by an other player
+//      TODO - welcher Player??? Woher??
+//      TODO - Rückgabe Player???
         put("/games/:gameid/players/turn", (req, res) -> {
+            String gameid = req.params(":gameid");
+
             return "";
         });
 
-//      TODO - releases the mutex
+//      releases the mutex
+//      res - keine
         delete("/games/:gameid/players/turn", (req, res) -> {
+            String gameid = req.params(":gameid");
+            if(getGame(gameid) != null){
+                mutex.addTurn(gameid, mutex.playerWithMutex(gameid));
+            }
             return "";
         });
 
@@ -181,5 +217,14 @@ public class GameService {
             e.printStackTrace();
 
         }
+    }
+
+    public static Game getGame(String gameid){
+        for (Game game : games){
+            if(game.getGameid().equals(gameid)){
+                return game;
+            }
+        }
+        return null;
     }
 }
