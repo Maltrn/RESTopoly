@@ -23,6 +23,7 @@ public class GameService {
         Mutex mutex = new Mutex();
 
         String bankaddress= "http://vs-docker.informatik.haw-hamburg.de:18192/banks/";
+//        String boardaddress = "http://vs-docker.informatik.haw-hamburg.de:18193/boards/";
         String boardaddress = "http://vs-docker.informatik.haw-hamburg.de:18193/boards/";
 
         get("/games", (req, res) -> {
@@ -132,13 +133,13 @@ public class GameService {
             Player player = game.getPlayer(req.params(":playerid"));
             player.setReady(true);
             for (Player p : game.getPlayers()) {
-                if (!p.isReady()) return player;
+                if (!p.isReady()) p.setReady(true);
             }
             game.setStarted(true);
             Gson gson = new GsonBuilder().create();
 //          TODO - Rückgabe laut raml -> nichts
-//            return gson.toJson(player);
-            return "";
+            return gson.toJson(player);
+//            return "";
 
         });
 
