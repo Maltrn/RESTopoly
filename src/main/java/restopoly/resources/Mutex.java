@@ -101,7 +101,20 @@ public class Mutex {
     }
 
     public void addNextTurnPlayer(String gameId, String playerId){
-//        TODO -
+        if (!isMutexFree(gameId)){
+            if (containGameMutex(gameId) && containPlayer(gameId,playerId)){
+                Iterator<Map.Entry<String, InnerMutex>> iterator = mapMutex.get(gameId).entrySet().iterator();
+                int waitPosition = 0;
+                while (iterator.hasNext()){
+                    InnerMutex mutex = iterator.next().getValue();
+                    if (mutex.isWaitOfMutex()) waitPosition++;
+                }
+                InnerMutex mutex = mapMutex.get(gameId).remove(playerId);
+                mutex.setWaitOfMutex(true);
+                mutex.setWaitPosition(waitPosition);
+                mapMutex.get(gameId).put(playerId,mutex);
+            }
+        }
     }
 
     private boolean containPlayer(String gameId, String player){
@@ -115,6 +128,19 @@ public class Mutex {
         }
     }
 
+    public boolean isMutexFree(String gameid){
+        boolean result = true;
+        if (containGameMutex(gameid)){
+            Iterator<Map.Entry<String, InnerMutex>> iterator = mapMutex.get(gameid).entrySet().iterator();
+            while (iterator.hasNext()){
+                if (iterator.next().getValue().isMutexing()) return false;
+            }
+        }
+        return result;
+    }
+
+
+
     public void removePlayer(String gameId, String playerId){
         if (containGameMutex(gameId)){
             if(containPlayer(gameId, playerId))
@@ -122,11 +148,24 @@ public class Mutex {
         }
     }
 
+    public boolean isPlayersWaiting(String game){
+        boolean result = false;
+        if (containGameMutex(game)){
+
+
+
+
+        }
+
+        return true;
+    }
+
     private class InnerMutex{
 
         private boolean hasMutex;
         private int turns = 0;
         private boolean waitOfMutex;
+        private int waitPosition;
 
         public boolean isMutexing() {
             return hasMutex;
@@ -151,6 +190,15 @@ public class Mutex {
         public void setWaitOfMutex(boolean waitOfMutex){
             this.waitOfMutex = waitOfMutex;
         }
+
+        public void setWaitPosition(int pos){
+            waitPosition = pos;
+        }
+
+        public int getWaitPosition(){
+            return waitPosition;
+        }
+
     }
 
 }

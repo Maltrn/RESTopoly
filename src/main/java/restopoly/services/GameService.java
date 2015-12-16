@@ -184,11 +184,18 @@ public class GameService implements Ports{
 //      responses: 200 - already holding the mutex,
 //      201 - aquired the mutex,
 //      409 - already aquired by an other player
-//      TODO - welcher Player??? Woher??
-//      TODO - Rückgabe Player???
-        put("/games/:gameid/players/turn", (req, res) -> {
+        put("/games/:gameid/players/:playerid/turn", (req, res) -> {
+            res.status(409);
             String gameid = req.params(":gameid");
+            String playerid  = req.params(":playerid");
 
+            if(mutex.playerHasMutex(gameid,playerid)){
+                res.status(200);
+            }
+            if (mutex.isMutexFree(gameid)){
+                res.status(201);
+                mutex.changeMutexToPlayer(gameid,playerid);
+            }
             return "";
         });
 
