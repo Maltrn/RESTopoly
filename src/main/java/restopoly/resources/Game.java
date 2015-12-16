@@ -26,6 +26,7 @@ public class Game {
     public String getUri() {
         return uri;
     }
+
     public void addPlayer(Player player){
         players.add(player);
     }

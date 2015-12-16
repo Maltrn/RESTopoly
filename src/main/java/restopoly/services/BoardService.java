@@ -6,6 +6,7 @@ import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import org.json.JSONObject;
 import restopoly.resources.*;
+import restopoly.util.Ports;
 import restopoly.util.Service;
 
 import java.util.ArrayList;
@@ -15,16 +16,11 @@ import static spark.Spark.*;
 /**
  * Created by Krystian.Graczyk on 27.11.15.
  */
-public class BoardService {
+public class BoardService implements Ports {
     private static ArrayList<Board> boards = new ArrayList<Board>();
-    private static String EVENTSADDRESS = "https://vs-docker.informatik.haw-hamburg.de/ports/18194/events";
 
 
     public static void main(String[] args) {
-
-
-        String gameaddress = "http://vs-docker.informatik.haw-hamburg.de:18191/games/";
-        String brokeraddress = "https://vs-docker.informatik.haw-hamburg.de/ports/18195/broker";
 
         get("/boards", (req, res) -> {
             res.status(200);
@@ -184,7 +180,7 @@ public class BoardService {
                 jsonObject.put("player", "/boards/"+g_ID+"/players/"+p.getName());
                 jsonObject.put("board", b);
 
-                HttpResponse eventRes  = Unirest.get(EVENTSADDRESS + "/event/"+g_ID).asJson();
+                HttpResponse eventRes  = Unirest.get(eventaddress + "/event/"+g_ID).asJson();
                 Event event = gson.fromJson(eventRes.getBody().toString(), Event.class);
 
                 jsonObject.put("events", event);
