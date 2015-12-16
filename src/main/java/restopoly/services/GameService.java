@@ -8,6 +8,7 @@ import com.google.gson.GsonBuilder;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import restopoly.util.CustomExclusionStrategy;
+import restopoly.util.Ports;
 import restopoly.util.Service;
 import restopoly.resources.*;
 
@@ -15,16 +16,13 @@ import java.util.ArrayList;
 
 import static spark.Spark.*;
 
-public class GameService {
+public class GameService implements Ports{
     private static ArrayList<Game> games = new ArrayList<Game>();
 
     public static void main(String[] args) {
 
         Mutex mutex = new Mutex();
 
-        String bankaddress= "http://vs-docker.informatik.haw-hamburg.de:18192/banks/";
-//        String boardaddress = "http://vs-docker.informatik.haw-hamburg.de:18193/boards/";
-        String boardaddress = "http://vs-docker.informatik.haw-hamburg.de:18193/boards/";
 
         get("/games", (req, res) -> {
             res.status(200);

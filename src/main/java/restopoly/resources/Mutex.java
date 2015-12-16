@@ -11,7 +11,7 @@ public class Mutex {
     private Map<String, Map<String, InnerMutex>> mapMutex;
 
     public Mutex() {
-        mapMutex = new HashMap<String,Map<String, InnerMutex>>();
+        mapMutex = new HashMap<String, Map<String, InnerMutex>>();
     }
 
     private boolean containGameMutex(String gameId){
@@ -60,8 +60,7 @@ public class Mutex {
                 InnerMutex mutex = entry.getValue();
                 if (mutex.isMutexing()) mutex_is_free = false;
             }
-            if (mutex_is_free)
-                mapMutex.get(gameId).get(playerId).setMutexing(mutex_is_free);
+            if (mutex_is_free) mapMutex.get(gameId).get(playerId).setMutexing(mutex_is_free);
         }
     }
 
@@ -126,7 +125,7 @@ public class Mutex {
     private class InnerMutex{
 
         private boolean hasMutex;
-        private int turns;
+        private int turns = 0;
         private boolean waitOfMutex;
 
         public boolean isMutexing() {

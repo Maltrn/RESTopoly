@@ -6,6 +6,7 @@ import com.mashape.unirest.http.Unirest;
 import org.json.JSONObject;
 import restopoly.resources.Broker;
 import restopoly.resources.Event;
+import restopoly.util.Ports;
 
 import java.util.ArrayList;
 
@@ -14,13 +15,11 @@ import static spark.Spark.*;
 /**
  * Created by final-work on 09.12.15.
  */
-public class BrokerService {
+public class BrokerService implements Ports {
 
     private static ArrayList<Broker> brokers = new ArrayList();
 
     public static void main(String[] args) {
-        String bankaddress = "https://vs-docker.informatik.haw-hamburg.de/ports/18192/banks";
-        String eventaddress = "https://vs-docker.informatik.haw-hamburg.de/ports/18194/events";
 
 //#############################    Aufgabenstellung A3    #####################################
 
