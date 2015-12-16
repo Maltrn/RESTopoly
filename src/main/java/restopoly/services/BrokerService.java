@@ -140,8 +140,15 @@ public class BrokerService implements Ports {
 //##################################  Weitere  #####################################
 //      TODO - Gets a broker
         get("/brokers/:gameid", (req, res) -> {
-            res.status(200);
+            res.status(404);
             res.header("Content-Type", "application/json");
+            for (Broker broker : brokers) {
+                if (broker.getGameid().equals(req.params(":gameid"))) {
+                    res.status(200);
+                    Gson gson = new Gson();
+                    return gson.toJson(broker);
+                }
+            }
             return "";
         });
 

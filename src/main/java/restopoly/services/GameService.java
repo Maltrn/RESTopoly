@@ -131,13 +131,13 @@ public class GameService implements Ports{
             Player player = game.getPlayer(req.params(":playerid"));
             player.setReady(true);
             for (Player p : game.getPlayers()) {
-                if (!p.isReady()) return player;
+                if (!p.isReady()) p.setReady(true);
             }
             game.setStarted(true);
             Gson gson = new GsonBuilder().create();
 //          TODO - Rückgabe laut raml -> nichts
-//            return gson.toJson(player);
-            return "";
+            return gson.toJson(player);
+//            return "";
 
         });
 

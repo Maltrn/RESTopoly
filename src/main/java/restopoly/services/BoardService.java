@@ -139,7 +139,7 @@ public class BoardService implements Ports {
                             if (p.getId().equals(req.params(":playerid"))) {
 
 //                              kommt der Wurf aus dem Request??
-                                p.setPosition(p.getPosition() + Integer.valueOf(req.params(":number"))); // ggf. muss hier noch was angepasst werden
+                                p.setPosition(p.getPosition() + Integer.valueOf(req.params(":number"))); // TODO - ggf. muss hier noch was angepasst werden
                                 Place newPlace = new Place("boards/" + req.params(":gameid") +"/places/" + i);
                                 p.setPlace(newPlace);
 //                              Position des Spielers wird im Gameservice ebenfalls aktualisiert
@@ -167,7 +167,10 @@ public class BoardService implements Ports {
 //            events: [ { action: "transfer", uri: "/banks/42/transfer/12345",
 //            name:"Bank Transfer", reason:"Rent for Badstrasse" } ] }
         post("/games/:gameid/players/:playerid/roll", (req, res) -> {
-            res.status(200);
+
+            int roll1 = Integer.valueOf(req.attribute("roll1"));
+            int roll2 = Integer.valueOf(req.attribute("roll1"));
+
             res.header("Content-Type", "application/json");
             String p_ID = req.params(":playerid");
             String g_ID = req.params(":gameid");
@@ -176,10 +179,15 @@ public class BoardService implements Ports {
             Board b = getGameB(g_ID);
             JSONObject jsonObject = null;
             if (b!=null && p != null){
+                res.status(200);
+
+                p.setPosition(p.getPosition()+(roll1+roll2));
+
                 jsonObject = new JSONObject();
                 jsonObject.put("player", "/boards/"+g_ID+"/players/"+p.getName());
                 jsonObject.put("board", b);
 
+// ToDo - Nur ausgelöste Events sollen zurückgegeben werden
                 HttpResponse eventRes  = Unirest.get(eventaddress + "/event/"+g_ID).asJson();
                 Event event = gson.fromJson(eventRes.getBody().toString(), Event.class);
 
@@ -187,6 +195,8 @@ public class BoardService implements Ports {
             }
             return gson.toJson(jsonObject);
         });
+
+
 
 //      TODO - ggf. eine Variable für die Referenz in Place anlegen
 //      List of available place
