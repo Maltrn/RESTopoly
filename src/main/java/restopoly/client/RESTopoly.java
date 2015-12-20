@@ -31,7 +31,6 @@ public class RESTopoly {
     private static String GAMEID;
     private static Player PLAYER;
     private static boolean TURN = true;
-    private static int PORT = 4567;
 
     public RESTopoly() {
     }
@@ -94,18 +93,24 @@ public class RESTopoly {
 
     public void createEvent(String type, String name, String reason, String resource, Player player) throws UnirestException{
         Event event = new Event(type,name,resource,reason,player);
-        Unirest.post(EVENTSADDRESS).queryString("gameid",GAMEID).body(new Gson().toJson(event)).asJson();
+        Unirest.post(EVENTSADDRESS).queryString("gameid",GAMEID).body(new Gson().toJson(event)).asString();
     }
 
     public void subscribe(String type, String name, String reason, String resource, Player player) throws UnirestException{
         Event event = new Event(type,name,resource,reason,player);
+        event.setGameid(GAMEID);
         Subscription subscription = new Subscription(GAMEID,PLAYERADDRESS,event);
         Unirest.post(EVENTSADDRESS+"/subscriptions").body(new Gson().toJson(subscription)).asString();
     }
 
     public static void main(String args[]) throws UnirestException, IOException {
+        URL whatismyip = new URL("http://checkip.amazonaws.com");
+        BufferedReader in = new BufferedReader(new InputStreamReader(
+                whatismyip.openStream()));
+        String ip = in.readLine(); //you get the IP as a String
 
-        Spark.port(PORT);
+        Spark.port(Integer.parseInt(args[0]));
+        String port = args[0];
 
         post("/player/turn", (req, res) -> {
             TURN = true;
@@ -119,11 +124,7 @@ public class RESTopoly {
             return "";
         });
 
-        URL whatismyip = new URL("http://checkip.amazonaws.com");
-        BufferedReader in = new BufferedReader(new InputStreamReader(
-                whatismyip.openStream()));
-        String ip = in.readLine(); //you get the IP as a String
-        PLAYERADDRESS ="http://"+ip+":"+PORT+"/player";
+        PLAYERADDRESS ="http://"+ip+":"+port+"/player";
         GAMESADDRESS = "https://vs-docker.informatik.haw-hamburg.de/ports/18191/games";
         DICEADDRESS = "https://vs-docker.informatik.haw-hamburg.de/ports/18190/dice";
         BANKSADDRESS = "https://vs-docker.informatik.haw-hamburg.de/ports/18192/banks";

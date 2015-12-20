@@ -11,7 +11,6 @@ public class Bank {
     private ArrayList<Account> accounts = new ArrayList<Account>();
 
     public Bank(String gameid){
-
         this.gameid = gameid;
     }
 

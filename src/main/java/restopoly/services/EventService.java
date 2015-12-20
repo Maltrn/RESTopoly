@@ -8,6 +8,7 @@ import restopoly.util.CustomExclusionStrategy;
 import restopoly.util.Service;
 import restopoly.resources.Event;
 import restopoly.resources.Subscription;
+import spark.Spark;
 
 import java.util.ArrayList;
 
@@ -21,6 +22,8 @@ import static spark.Spark.post;
 public class EventService {
 
     public static void main(String[] args) {
+
+        Spark.port(4568);
 
         ArrayList<Event> events = new ArrayList<Event>();
         ArrayList<Subscription> subscriptions = new ArrayList<Subscription>();
