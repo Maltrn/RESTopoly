@@ -11,11 +11,12 @@ import restopoly.util.Ports;
 import java.util.ArrayList;
 
 import static spark.Spark.*;
+import static restopoly.util.Ports.*;
 
 /**
  * Created by final-work on 09.12.15.
  */
-public class BrokerService implements Ports {
+public class BrokerService {
 
     private static ArrayList<Broker> brokers = new ArrayList();
 
@@ -73,13 +74,13 @@ public class BrokerService implements Ports {
                     String ownerID = tBroker.getOwnerID(p_id);
                     if (ownerID != null){
                         String tPrice = tBroker.getRent(p_id);
-                        Unirest.post(bankaddress + "/" + g_id + "/transfer/from/" + pl_id + "/to/" + ownerID + "/" + tPrice).asJson();
+                        Unirest.post(BANKSADDRESS + "/" + g_id + "/transfer/from/" + pl_id + "/to/" + ownerID + "/" + tPrice).asJson();
 
                         res.status(200);
                         Gson gson = new Gson();
                         JSONObject jsonObject = null;
                         jsonObject = new JSONObject();
-                        HttpResponse eventRes  = Unirest.get(eventaddress + "/event/"+req.params(":gameid")).asJson();
+                        HttpResponse eventRes  = Unirest.get(EVENTSADDRESS + "/event/"+req.params(":gameid")).asJson();
                         Event event = gson.fromJson(eventRes.getBody().toString(), Event.class);
                         res.status(200);
                         jsonObject.put("events", event);
@@ -111,14 +112,14 @@ public class BrokerService implements Ports {
                         String url = "/banks/:gameid/transfer/from/:from/:amount";
                         String tPrice = tBroker.getPrice(p_id);
                         String playerID= "";
-                        HttpResponse response = Unirest.post(bankaddress + "/" + g_id + "/transfer/from/" + playerID + "/" + tPrice).asJson();
+                        HttpResponse response = Unirest.post(BANKSADDRESS + "/" + g_id + "/transfer/from/" + playerID + "/" + tPrice).asJson();
                         if(response.getStatus() == 201){
                             tBroker.buyField(p_id,playerID);
 
                             Gson gson = new Gson();
                             JSONObject jsonObject = null;
                             jsonObject = new JSONObject();
-                            HttpResponse eventRes  = Unirest.get(eventaddress + "/event/"+req.params(":gameid")).asJson();
+                            HttpResponse eventRes  = Unirest.get(EVENTSADDRESS + "/event/"+req.params(":gameid")).asJson();
                             Event event = gson.fromJson(eventRes.getBody().toString(), Event.class);
                             res.status(200);
                             jsonObject.put("events", event);

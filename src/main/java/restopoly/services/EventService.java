@@ -6,6 +6,7 @@ import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import restopoly.util.CustomExclusionStrategy;
 import restopoly.util.Service;
+import static restopoly.util.Ports.*;
 import restopoly.resources.Event;
 import restopoly.resources.Subscription;
 
@@ -55,7 +56,7 @@ public class EventService {
             for(Subscription subscription:subscriptions){
                 if(subscription.getEvent().getName().equals(event.getName()) &&
                         subscription.getEvent().getGameid().equals(event.getGameid())){
-                Unirest.post(subscription.getUri()).body(gson.toJson(event)).asString();
+                    Unirest.post(PLAYERSADDRESS+"/event").queryString("playerUri",subscription.getUri()).body(gson.toJson(event)).asString();
                 }
             }
             gson = new GsonBuilder()
@@ -99,8 +100,8 @@ public class EventService {
                     .queryString("name", "EVENT")
                     .queryString("description", "Event Service")
                     .queryString("service", "events")
-                    .queryString("uri", "https://vs-docker.informatik.haw-hamburg.de/ports/18194/events")
-                    .body(new Gson().toJson(new Service("EVENT", "Event Service", "events", "https://vs-docker.informatik.haw-hamburg.de/ports/18194/events")))
+                    .queryString("uri", EVENTSADDRESS)
+                    .body(new Gson().toJson(new Service("EVENT", "Event Service", "events", EVENTSADDRESS)))
                     .asJson();
         } catch (UnirestException e) {
             e.printStackTrace();

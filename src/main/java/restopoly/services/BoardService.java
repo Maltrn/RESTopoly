@@ -6,7 +6,7 @@ import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import org.json.JSONObject;
 import restopoly.resources.*;
-import restopoly.util.Ports;
+import static restopoly.util.Ports.*;
 import restopoly.util.Service;
 
 import java.util.ArrayList;
@@ -16,8 +16,8 @@ import static spark.Spark.*;
 /**
  * Created by Krystian.Graczyk on 27.11.15.
  */
-public class BoardService implements Ports {
-    private static ArrayList<Board> boards = new ArrayList<Board>();
+public class BoardService {
+    private static ArrayList<Board> boards = new ArrayList<>();
 
 
     public static void main(String[] args) {
@@ -30,16 +30,16 @@ public class BoardService implements Ports {
 
         put("/boards/:gameid", (req, res) -> {
             Board board = new Board(req.params(":gameid"));
-            ArrayList<Field> fields = new ArrayList<Field>();
-            fields.add(new Field(new Place("0"), new ArrayList<Player>()));
-            fields.add(new Field(new Place("1"), new ArrayList<Player>()));
-            fields.add(new Field(new Place("2"), new ArrayList<Player>()));
-            fields.add(new Field(new Place("3"), new ArrayList<Player>()));
+            ArrayList<Field> fields = new ArrayList<>();
+            fields.add(new Field(new Place("0"), new ArrayList<>()));
+            fields.add(new Field(new Place("1"), new ArrayList<>()));
+            fields.add(new Field(new Place("2"), new ArrayList<>()));
+            fields.add(new Field(new Place("3"), new ArrayList<>()));
 
             board.setFields(fields);
             boards.add(board);
 //          TODO - Broker anlegen
-            Unirest.put(brokeraddress + "/" + req.params(":gameid"));
+            Unirest.put(BROKERSADDRESS + "/" + req.params(":gameid"));
             return "";
         });
 
@@ -58,9 +58,10 @@ public class BoardService implements Ports {
             res.status(404);
             res.header("Content-Type", "application/json");
             for(Board b : boards){
-                if(b.getGameid().equals(req.params(":gameid")))
+                if(b.getGameid().equals(req.params(":gameid"))) {
                     res.status(200);
                     return new Gson().toJson(b);
+                }
             }
             return "";
         });
@@ -144,11 +145,11 @@ public class BoardService implements Ports {
                                 p.setPlace(newPlace);
 //                              Position des Spielers wird im Gameservice ebenfalls aktualisiert
                                 Gson gson = new Gson();
-                                HttpResponse playerResponse  = Unirest.get(gameaddress + "/" + req.params(":gameid") + "/players/" + req.params(":playerid")).asJson();
+                                HttpResponse playerResponse  = Unirest.get(GAMESADDRESS + "/" + req.params(":gameid") + "/players/" + req.params(":playerid")).asJson();
                                 Player newPlayer = gson.fromJson(playerResponse.getBody().toString(), Player.class);
                                 newPlayer.setPlace(newPlace);
-                                Unirest.delete(gameaddress + "/" + req.params(":gameid") + "/players/" + req.params(":playerid"));
-                                Unirest.put(gameaddress + "/" + req.params(":gameid") + "/players/" + req.params(":playerid")).body(new Gson().toJson(newPlayer)).asString();
+                                Unirest.delete(GAMESADDRESS + "/" + req.params(":gameid") + "/players/" + req.params(":playerid"));
+                                Unirest.put(GAMESADDRESS + "/" + req.params(":gameid") + "/players/" + req.params(":playerid")).body(new Gson().toJson(newPlayer)).asString();
                             }
                         }
                     }
@@ -188,7 +189,7 @@ public class BoardService implements Ports {
                 jsonObject.put("board", b);
 
 // ToDo - Nur ausgelöste Events sollen zurückgegeben werden
-                HttpResponse eventRes  = Unirest.get(eventaddress + "/event/"+g_ID).asJson();
+                HttpResponse eventRes  = Unirest.get(EVENTSADDRESS + "/event/"+g_ID).asJson();
                 Event event = gson.fromJson(eventRes.getBody().toString(), Event.class);
 
                 jsonObject.put("events", event);
@@ -258,8 +259,8 @@ public class BoardService implements Ports {
                     .queryString("name", "BOARD")
                     .queryString("description", "Board Service")
                     .queryString("service", "boards")
-                    .queryString("uri", "https://vs-docker.informatik.haw-hamburg.de/ports/18193/boards")
-                    .body(new Gson().toJson(new Service("BOARD", "Board Service", "board", "https://vs-docker.informatik.haw-hamburg.de/ports/18193/boards")))
+                    .queryString("uri", BOARDSADDRESS)
+                    .body(new Gson().toJson(new Service("BOARD", "Board Service", "board", BOARDSADDRESS)))
                     .asJson();
         } catch (UnirestException e) {
             e.printStackTrace();

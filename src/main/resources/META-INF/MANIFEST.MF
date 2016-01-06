@@ -1,4 +1,4 @@
 Manifest-Version: 1.0
-Class-Path: restopoly.services.GameService
-Main-Class: restopoly.services.GameService
+Class-Path: restopoly.client.RESTopoly
+Main-Class: restopoly.client.RESTopoly
 

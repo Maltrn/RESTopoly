@@ -4,38 +4,39 @@ import com.google.gson.Gson;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
+import org.eclipse.jetty.websocket.api.Session;
+import org.eclipse.jetty.websocket.client.WebSocketClient;
 import restopoly.resources.*;
-import spark.Spark;
+import restopoly.util.PlayerWebSocket;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.URL;
-
-import static spark.Spark.post;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Future;
+import static restopoly.util.Ports.*;
 
 /**
  * Created by Krystian.Graczyk on 28.10.15.
  */
 public class RESTopoly {
 
-    private static String PLAYERADDRESS;
-    private static String GAMESADDRESS;
-    private static String BANKSADDRESS;
-    private static String DICEADDRESS;
-    private static String BOARDSADDRESS;
-    private static String EVENTSADDRESS;
-    private static String BROKERSADDRESS;
     private static String GAMEID;
     private static Player PLAYER;
-    private static boolean TURN = true;
-    private static int PORT = 4567;
+    private static String PLAYERADDRESS;
+    private boolean turn = true;
+    private List<Event> eventList = new ArrayList<>();
 
-    public RESTopoly() {
+    private static final RESTopoly INSTANCE = new RESTopoly();
+
+    public static RESTopoly getInstance() {
+        return INSTANCE;
     }
+
+    // METHODS
 
     public String createGame() throws UnirestException {
         HttpResponse response = Unirest.post(GAMESADDRESS)
@@ -44,7 +45,6 @@ public class RESTopoly {
                 .queryString("bankUri", BANKSADDRESS)
                 .queryString("boardUri", BOARDSADDRESS)
                 .queryString("eventUri", EVENTSADDRESS)
-                .queryString("brokerUri", BROKERSADDRESS)
                 .asJson();
         Gson gson = new Gson();
         Game game = gson.fromJson(response.getBody().toString(), Game.class);
@@ -66,12 +66,15 @@ public class RESTopoly {
 
     public int diceRoll() throws UnirestException {
 
-        if (TURN == true) return roll() + roll();
+        if (turn) {
+            turn = false;
+            return roll() + roll();
+        }
         return 0;
     }
 
     public int roll() throws UnirestException {
-        HttpResponse response = Unirest.get(DICEADDRESS).asJson();
+        HttpResponse response = Unirest.get(DICEADDRESS).asString();
         Gson gson = new Gson();
         Roll roll = gson.fromJson(response.getBody().toString(), Roll.class);
         return roll.getNumber();
@@ -96,45 +99,54 @@ public class RESTopoly {
 
     public void createEvent(String type, String name, String reason, String resource, Player player) throws UnirestException{
         Event event = new Event(type,name,resource,reason,player);
-        Unirest.post(EVENTSADDRESS).queryString("gameid",GAMEID).body(new Gson().toJson(event)).asJson();
+        Unirest.post(EVENTSADDRESS).queryString("gameid", GAMEID).body(new Gson().toJson(event)).asString();
     }
 
     public void subscribe(String type, String name, String reason, String resource, Player player) throws UnirestException{
         Event event = new Event(type,name,resource,reason,player);
-        Subscription subscription = new Subscription(GAMEID,PLAYERADDRESS,event);
+        event.setGameid(GAMEID);
+        Subscription subscription = new Subscription(GAMEID, PLAYERADDRESS,event);
         Unirest.post(EVENTSADDRESS+"/subscriptions").body(new Gson().toJson(subscription)).asString();
+    }
+
+    public boolean isTurn() {
+        return turn;
+    }
+
+    public void setTurn(boolean turn) {
+        this.turn = turn;
+    }
+
+    public static String getPLAYERADDRESS() {
+        return PLAYERADDRESS;
+    }
+
+    public static void setPLAYERADDRESS(String PLAYERADDRESS) {
+        RESTopoly.PLAYERADDRESS = PLAYERADDRESS;
+    }
+
+    public static Player getPLAYER() {
+        return PLAYER;
+    }
+
+    public void addEvent(Event event){
+        eventList.add(event);
     }
 
     public static void main(String args[]) throws UnirestException, IOException {
 
-        Spark.port(PORT);
+        URI uri = URI.create(PLAYERSWEBSOCKETADDRESS);
 
-        post("/player/turn", (req, res) -> {
-            TURN = true;
-            System.out.println(res.body());
-            return "";
-        });
+        try {
+            WebSocketClient clientSocket = new WebSocketClient();
+            clientSocket.start();
 
-        post("/player/event", (req, res) -> {
-            Event event = new Gson().fromJson(req.body().toString(), Event.class);
-            System.out.println(event);
-            return "";
-        });
+            Future<Session> session = clientSocket.connect(new PlayerWebSocket(), uri);
 
-        URL whatismyip = new URL("http://checkip.amazonaws.com");
-        BufferedReader in = new BufferedReader(new InputStreamReader(
-                whatismyip.openStream()));
-        String ip = in.readLine(); //you get the IP as a String
-        PLAYERADDRESS ="http://"+ip+":"+PORT+"/player";
-        GAMESADDRESS = "https://vs-docker.informatik.haw-hamburg.de/ports/18191/games";
-        DICEADDRESS = "https://vs-docker.informatik.haw-hamburg.de/ports/18190/dice";
-        BANKSADDRESS = "https://vs-docker.informatik.haw-hamburg.de/ports/18192/banks";
-        BOARDSADDRESS = "https://vs-docker.informatik.haw-hamburg.de/ports/18193/boards";
-        EVENTSADDRESS = "https://vs-docker.informatik.haw-hamburg.de/ports/18194/events";
-        BROKERSADDRESS = "https://vs-docker.informatik.haw-hamburg.de/ports/18195/broker";
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
-
-        RESTopoly client = new RESTopoly();
 
         JFrame frame = new JFrame("RESTopoly");
         frame.setVisible(true);
@@ -185,7 +197,7 @@ public class RESTopoly {
                 if (e.getSource() == btnl) {
                     if (cbl.getSelectedItem().toString().equals("Create Game")) {
                         try {
-                            GAMEID = client.createGame();
+                            GAMEID = INSTANCE.createGame();
                             JTextArea textarea = new JTextArea(GAMEID);
                             textarea.setEditable(false);
                             JOptionPane.showMessageDialog(frame,
@@ -202,14 +214,14 @@ public class RESTopoly {
                         String name = JOptionPane.showInputDialog(frame,
                                 "What is your Name?", null);
                         try {
-                            client.joinGame(gameid, playerid, name);
+                            INSTANCE.joinGame(gameid, playerid, name);
                         } catch (UnirestException e1) {
                             e1.printStackTrace();
                         }
                     }
                     if (cbl.getSelectedItem().toString().equals("Ready")) {
                         try {
-                            client.ready();
+                            INSTANCE.ready();
                         } catch (UnirestException e1) {
                             e1.printStackTrace();
                         }
@@ -217,7 +229,7 @@ public class RESTopoly {
                     if (cbl.getSelectedItem().toString().equals("Roll")) {
                         try {
                             JOptionPane.showMessageDialog(frame,
-                                    client.diceRoll());
+                                    INSTANCE.diceRoll());
                         } catch (UnirestException e1) {
                             e1.printStackTrace();
                         }
@@ -226,7 +238,7 @@ public class RESTopoly {
                         try {
                             String account = JOptionPane.showInputDialog(frame,
                                     "Which account balance do you want to see?", null);
-                            JOptionPane.showMessageDialog(frame, client.accountBalance(account));
+                            JOptionPane.showMessageDialog(frame, INSTANCE.accountBalance(account));
                         } catch (UnirestException e1) {
                             e1.printStackTrace();
                         }
@@ -235,7 +247,7 @@ public class RESTopoly {
                         try {
                             String name = JOptionPane.showInputDialog(frame,
                                     "Which name does the event have which you want to subscribe to?", null);
-                            client.subscribe("", name, "", "", PLAYER);
+                            INSTANCE.subscribe("", name, "", "", PLAYER);
                         } catch (UnirestException e1) {
                             e1.printStackTrace();
                         }
@@ -254,7 +266,7 @@ public class RESTopoly {
                                     "Which account do you want to take money from?", null);
                             String amount = JOptionPane.showInputDialog(frame,
                                     "How much money should be taken?", null);
-                            client.transferFrom(from, Integer.parseInt(amount));
+                            INSTANCE.transferFrom(from, Integer.parseInt(amount));
                         } catch (UnirestException e1) {
                             e1.printStackTrace();
                         }
@@ -265,7 +277,7 @@ public class RESTopoly {
                                     "Which account do you want to give money to?", null);
                             String amount = JOptionPane.showInputDialog(frame,
                                     "How much money should be given?", null);
-                            client.transferTo(to, Integer.parseInt(amount));
+                            INSTANCE.transferTo(to, Integer.parseInt(amount));
                         } catch (UnirestException e1) {
                             e1.printStackTrace();
                         }
@@ -278,7 +290,7 @@ public class RESTopoly {
                                     "Which account do you want to give money to?", null);
                             String amount = JOptionPane.showInputDialog(frame,
                                     "How much money should be taken?", null);
-                            client.transferFromTo(from, to, Integer.parseInt(amount));
+                            INSTANCE.transferFromTo(from, to, Integer.parseInt(amount));
                         } catch (UnirestException e1) {
                             e1.printStackTrace();
                         }
@@ -293,7 +305,7 @@ public class RESTopoly {
                                     "Reason for Event?", null);
                             String resource = JOptionPane.showInputDialog(frame,
                                     "Related Resource Uri?", null);
-                            client.createEvent(type, name, reason, resource, PLAYER);
+                            INSTANCE.createEvent(type, name, reason, resource, PLAYER);
                         } catch (UnirestException e1) {
                             e1.printStackTrace();
                         }

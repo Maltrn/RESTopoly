@@ -5,11 +5,13 @@ package restopoly.util;
  */
 public interface Ports {
 
-    String bankaddress= "http://vs-docker.informatik.haw-hamburg.de:18192/banks/";
-    String boardaddress = "http://vs-docker.informatik.haw-hamburg.de:18193/boards/";
-    String eventaddress = "https://vs-docker.informatik.haw-hamburg.de/ports/18194/events";
-    String gameaddress = "http://vs-docker.informatik.haw-hamburg.de:18191/games/";
-    String brokeraddress = "https://vs-docker.informatik.haw-hamburg.de/ports/18195/broker";
-    String diceraddress ="https://vs-docker.informatik.haw-hamburg.de/ports/18190/dice";
+    String DICEADDRESS = "http://172.18.0.9:4567/dice";
+    String GAMESADDRESS = "http://172.18.0.10:4567/games";
+    String BANKSADDRESS = "http://172.18.0.11:4567/banks";
+    String BOARDSADDRESS = "http://172.18.0.12:4567/boards";
+    String EVENTSADDRESS = "http://172.18.0.13:4567/events";
+    String PLAYERSADDRESS = "http://172.18.0.16:4567/player";
+    String PLAYERSWEBSOCKETADDRESS = "ws://172.18.0.16:4567";
+    String BROKERSADDRESS = "http://172.18.0.17:4567/brokers";
 
 }

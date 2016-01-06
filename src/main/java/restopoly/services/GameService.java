@@ -8,16 +8,15 @@ import com.google.gson.GsonBuilder;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import restopoly.util.CustomExclusionStrategy;
-import restopoly.util.Ports;
+import static restopoly.util.Ports.*;
 import restopoly.util.Service;
 import restopoly.resources.*;
-
 import java.util.ArrayList;
-
 import static spark.Spark.*;
 
-public class GameService implements Ports{
-    private static ArrayList<Game> games = new ArrayList<Game>();
+public class GameService{
+
+    private static ArrayList<Game> games = new ArrayList<>();
 
     public static void main(String[] args) {
 
@@ -49,8 +48,8 @@ public class GameService implements Ports{
             components.setEvent(req.queryParams("eventUri"));
             games.add(game);
             mutex.addGame(game.getGameid());
-            Unirest.put(bankaddress+"/"+game.getGameid()).asString();
-            Unirest.put(boardaddress+"/"+game.getGameid()).asString();
+            Unirest.put(BANKSADDRESS+"/"+game.getGameid()).asString();
+            Unirest.put(BOARDSADDRESS+"/"+game.getGameid()).asString();
 
 
             Gson gson = new GsonBuilder()
@@ -101,7 +100,7 @@ public class GameService implements Ports{
             player.setName(req.queryParams("name"));
             player.setUri(req.queryParams("uri"));
             player.setPosition(0);
-            Unirest.put(boardaddress+"/"+req.params(":gameid")+"/players/"+req.params(":playerid")).
+            Unirest.put(BOARDSADDRESS+"/"+req.params(":gameid")+"/players/"+req.params(":playerid")).
                     body(new Gson().toJson(player)).asString();
             Game game = null;
             for(Game g : games){
@@ -216,8 +215,8 @@ public class GameService implements Ports{
                     .queryString("name", "GAMES")
                     .queryString("description", "Games Service")
                     .queryString("service", "games")
-                    .queryString("uri", "https://vs-docker.informatik.haw-hamburg.de/ports/18191/games")
-                    .body(new Gson().toJson(new Service("GAMES", "Games Service", "games", "https://vs-docker.informatik.haw-hamburg.de/ports/18191/games")))
+                    .queryString("uri", GAMESADDRESS)
+                    .body(new Gson().toJson(new Service("GAMES", "Games Service", "games", GAMESADDRESS)))
                     .asJson();
         } catch (UnirestException e) {
             e.printStackTrace();

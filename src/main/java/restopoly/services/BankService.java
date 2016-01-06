@@ -7,6 +7,7 @@ import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import restopoly.util.CustomExclusionStrategy;
 import restopoly.util.Service;
+import static restopoly.util.Ports.*;
 import restopoly.resources.*;
 
 import java.util.ArrayList;
@@ -20,8 +21,9 @@ public class BankService {
 
     public static void main(String[] args) {
 
-        ArrayList<Bank> banks = new ArrayList<Bank>();
-        String gameaddress = "http://vs-docker.informatik.haw-hamburg.de:18191/games/";
+        BankService bankService = new BankService();
+
+        ArrayList<Bank> banks = new ArrayList<>();
 
         get("/banks/:gameid", (req, res) -> {
             res.header("Content-Type", "application/json");
@@ -57,7 +59,7 @@ public class BankService {
                 return gson.toJson(bank.getAccount(req.body()));
             }
 
-            HttpResponse playerResponse = Unirest.get(gameaddress+ req.params(":gameid")+"/players/"+req.body()).asJson();
+            HttpResponse playerResponse = Unirest.get(GAMESADDRESS+"/"+ req.params(":gameid")+"/players/"+req.body()).asJson();
             Player player = gson.fromJson(playerResponse.getBody().toString(),Player.class);
 
             Account account = new Account(req.body(),player,0);
@@ -90,64 +92,89 @@ public class BankService {
 
 
         post("/banks/:gameid/transfer/to/:to/:amount", (req, res) -> {
-            res.status(201);
-            res.header("Content-Type", "application/json");
-            Bank bank = null;
-            for(Bank b : banks){
-                if(b.getGameid().equals(req.params(":gameid"))) bank=b;
-            }
-            Account to = bank.getAccount(req.params(":to"));
-            int saldo = to.getSaldo();
-            to.setSaldo(saldo+Integer.parseInt(req.params(":amount")));
+            synchronized(bankService) {
+                res.status(201);
+                res.header("Content-Type", "application/json");
+                Bank bank = null;
+                for (Bank b : banks) {
+                    if (b.getGameid().equals(req.params(":gameid"))) bank = b;
+                }
+                Account to = bank.getAccount(req.params(":to"));
+                int saldo = to.getSaldo();
+                try {
+                    to.setSaldo(saldo + Integer.parseInt(req.params(":amount")));
 
-            Gson gson = new GsonBuilder()
-                    .setExclusionStrategies(new CustomExclusionStrategy("restopoly.resources.Account.player"))
-                    .create();
-            return gson.toJson(to);
+                    Gson gson = new GsonBuilder()
+                            .setExclusionStrategies(new CustomExclusionStrategy("restopoly.resources.Account.player"))
+                            .create();
+                    return gson.toJson(to);
+                } catch (Throwable e) {
+                    to.setSaldo(saldo);
+                    res.status(500);
+                    return "";
+                }
+            }
         });
 
         post("/banks/:gameid/transfer/from/:from/:amount", (req, res) -> {
-            res.status(201);
-            res.header("Content-Type", "application/json");
-            Bank bank = null;
-            for(Bank b : banks){
-                if(b.getGameid().equals(req.params(":gameid"))) bank=b;
-            }
-            Account from = bank.getAccount(req.params(":from"));
-            if(from.getSaldo()<Integer.parseInt(req.params(":amount"))){
-                res.status(403);
-                return "";
-            }
-            int saldo = from.getSaldo();
-            from.setSaldo(saldo-Integer.parseInt(req.params(":amount")));
+            synchronized(bankService) {
+                res.status(201);
+                res.header("Content-Type", "application/json");
+                Bank bank = null;
+                for (Bank b : banks) {
+                    if (b.getGameid().equals(req.params(":gameid"))) bank = b;
+                }
+                Account from = bank.getAccount(req.params(":from"));
+                if (from.getSaldo() < Integer.parseInt(req.params(":amount"))) {
+                    res.status(403);
+                    return "";
+                }
+                int saldo = from.getSaldo();
+                try {
+                    from.setSaldo(saldo - Integer.parseInt(req.params(":amount")));
 
-            Gson gson = new GsonBuilder()
-                    .setExclusionStrategies(new CustomExclusionStrategy("restopoly.resources.Account.player"))
-                    .create();
-            return gson.toJson(from);
+                    Gson gson = new GsonBuilder()
+                            .setExclusionStrategies(new CustomExclusionStrategy("restopoly.resources.Account.player"))
+                            .create();
+                    return gson.toJson(from);
+                } catch (Throwable e) {
+                    from.setSaldo(saldo);
+                    res.status(500);
+                    return "";
+                }
+            }
         });
 
 
         post("/banks/:gameid/transfer/from/:from/to/:to/:amount", (req, res) -> {
-            res.status(201);
-            res.header("Content-Type", "application/json");
-            Bank bank = null;
-            for(Bank b : banks){
-                if(b.getGameid().equals(req.params(":gameid"))) bank=b;
-            }
-            Account from = bank.getAccount(req.params(":from"));
-            int fromsaldo = from.getSaldo();
+            synchronized(bankService) {
+                res.status(201);
+                res.header("Content-Type", "application/json");
+                Bank bank = null;
+                for (Bank b : banks) {
+                    if (b.getGameid().equals(req.params(":gameid"))) bank = b;
+                }
+                Account from = bank.getAccount(req.params(":from"));
+                int fromsaldo = from.getSaldo();
 
-            Account to = bank.getAccount(req.params(":to"));
-            int tosaldo = to.getSaldo();
+                Account to = bank.getAccount(req.params(":to"));
+                int tosaldo = to.getSaldo();
 
-            if(fromsaldo<Integer.parseInt(req.params(":amount"))){
-                res.status(403);
-                return "";
+                if (fromsaldo < Integer.parseInt(req.params(":amount"))) {
+                    res.status(403);
+                    return "";
+                }
+                try {
+                    from.setSaldo(fromsaldo - Integer.parseInt(req.params(":amount")));
+                    to.setSaldo(tosaldo + Integer.parseInt(req.params(":amount")));
+                    return "";
+                } catch (Throwable e) {
+                    from.setSaldo(fromsaldo);
+                    to.setSaldo(tosaldo);
+                    res.status(500);
+                    return "";
+                }
             }
-            from.setSaldo(fromsaldo-Integer.parseInt(req.params(":amount")));
-            to.setSaldo(tosaldo+Integer.parseInt(req.params(":amount")));
-            return "";
         });
 
 
@@ -158,8 +185,8 @@ public class BankService {
                     .queryString("name", "BANKS")
                     .queryString("description", "Banks Service")
                     .queryString("service", "banks")
-                    .queryString("uri", "https://vs-docker.informatik/haw-hamburg.de/ports/18192/banks")
-                    .body(new Gson().toJson(new Service("BANKS", "Banks Service", "banks", "https://vs-docker.informatik.haw-hamburg.de/ports/18192/banks")))
+                    .queryString("uri", BANKSADDRESS)
+                    .body(new Gson().toJson(new Service("BANKS", "Banks Service", "banks", BANKSADDRESS)))
                     .asJson();
         } catch (UnirestException e) {
             e.printStackTrace();
