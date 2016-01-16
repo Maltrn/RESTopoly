@@ -104,21 +104,17 @@ public class GameService{
             return gson.toJson(game.getPlayers());
         });
 
-//      gets the player holding the turn mutex
-//      res 200 - { id:mario, name:"Mario", uri:"http://localhost:4567/player/mario", ready:false }
-//      res 404
         get("/games/:gameid/players/turn", (req, res) -> {
-            System.out.println("Player with Mutex: " +  mutex.playerWithMutex(req.params(":gameid")));
             res.status(400);
             String gameid = req.params(":gameid");
             String playerid = mutex.playerWithMutex(gameid);
 
-            if (!playerid.isEmpty()) {
+            if (playerid != null && !playerid.isEmpty()) {
                 res.status(200);
                 Gson gson = new Gson();
                 return gson.toJson(getGame(gameid).getPlayer(playerid));
             }
-            return "Bla";
+            return "";
         });
 
         get("/games/:gameid/players/:playerid", (req, res) -> {
@@ -140,7 +136,6 @@ public class GameService{
 //            player.setUri(req.queryParams("uri"));
 //            TODO - IP und Port müssen angepasst werden
             player.setUri("http://localhost:4567/games/"+req.params("gameid") + "/players/" + req.params(":playerid"));
-//            System.out.println("PlayerUri: " + player.getUri());
             player.setPosition(0);
 //            TODO - SPÄTER wieder einkommentieren
 //            Unirest.put(BOARDSADDRESS+"/"+req.params(":gameid")+"/players/"+req.params(":playerid")).body(new Gson().toJson(player)).asString();
@@ -153,12 +148,10 @@ public class GameService{
             return "";
         });
 
-//      releases the mutex
-//      res - keine
         delete("/games/:gameid/players/turn", (req, res) -> {
             String gameid = req.params(":gameid");
             if(getGame(gameid) != null){
-                mutex.addTurn(gameid, mutex.playerWithMutex(gameid));
+                mutex.addTurn(mutex.playerWithMutex(gameid), gameid);
             }
             return "";
         });
@@ -173,29 +166,40 @@ public class GameService{
             return "";
         });
 
-//      TODO - Mutex berücksichtigen?
         put("/games/:gameid/players/:playerid/ready", (req, res) -> {
             Game game = null;
             for(Game g : games){
-                if(g.getGameid().equals(req.params(":gameid"))) game = g;
+                if(g.getGameid().equals(req.params(":gameid"))) {
+                    game = g;
+                }
             }
+
             Player player = game.getPlayer(req.params(":playerid"));
-            player.setReady(true);
+
+            String gameId = req.params(":gameid");
+
             for (Player p : game.getPlayers()) {
                 if (!p.isReady()) p.setReady(true);
+                player.setReady(true);
             }
-            game.setStarted(true);
-            Gson gson = new GsonBuilder().create();
+
+            if(!mutex.isMutexFree(gameId)) {
+                mutex.releaseMutex(gameId);
+            }
+
 //          TODO - Rückgabe laut raml -> nichts
-            return gson.toJson(player);
-//            return "";
+//            Gson gson = new GsonBuilder().create();
+//            return gson.toJson(player);
+            return "";
 
         });
 
         get("/games/:gameid/players/:playerid/ready", (req, res) -> {
             Game game = null;
             for(Game g : games){
-                if(g.getGameid().equals(req.params(":gameid"))) game = g;
+                if(g.getGameid().equals(req.params(":gameid"))){
+                    game = g;
+                }
             }
             Player player = game.getPlayer(req.params(":playerid"));
             Gson gson = new GsonBuilder().create();
@@ -216,10 +220,6 @@ public class GameService{
             return "";
         });
 
-//      responses: 200 - already holding the mutex,
-//      201 - aquired the mutex,
-//      409 - already aquired by an other player
-
         put("/games/:gameid/players/:playerid/turn", (req, res) -> {
 //          TODO - Player wird als RequestBody übergeben - weitere Verwendung?
 //            Player player = new Gson().fromJson(req.body().toString(),Player.class);
@@ -231,7 +231,6 @@ public class GameService{
             if(mutex.mutexBlockedByPlayer(gameid, playerid)){
                 res.status(200);
             }
-            System.out.println("MutexFree: " + mutex.isMutexFree(gameid));
             if (mutex.isMutexFree(gameid)){
                 res.status(201);
                 mutex.changeMutexToPlayer(gameid, playerid);

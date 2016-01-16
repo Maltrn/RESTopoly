@@ -65,13 +65,14 @@ public class Mutex {
     }
 
     public void addTurn(String playerId, String gameID){
-        if (containGameMutex(gameID))
-            if (mapMutex.get(gameID).containsKey(playerId) && mapMutex.get(gameID).get(playerId).isMutexBlocked()){
+        if (containGameMutex(gameID)) {
+            if (mapMutex.get(gameID).containsKey(playerId) && mapMutex.get(gameID).get(playerId).isMutexBlocked()) {
                 InnerMutex mutex = mapMutex.get(gameID).remove(playerId);
-                mutex.setTurns(mutex.getTurns()+1);
+                mutex.setTurns(mutex.getTurns() + 1);
                 mutex.setMutex(false);
-                mapMutex.get(gameID).put(playerId,mutex);
+                mapMutex.get(gameID).put(playerId, mutex);
             }
+        }
     }
 
     public void addGame(String gameId){
@@ -98,6 +99,17 @@ public class Mutex {
             }
         }
         return result;
+    }
+
+    public boolean releaseMutex(String gameid){
+
+        if (containGameMutex(gameid)){
+            for (InnerMutex elem: mapMutex.get(gameid).values()){
+                if (elem.isMutexBlocked()) elem.setMutex(false);
+            }
+            return true;
+        }
+        return false;
     }
 
     public void addNextTurnPlayer(String gameId, String playerId){
