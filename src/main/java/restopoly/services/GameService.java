@@ -7,11 +7,16 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
+import restopoly.resources.Components;
+import restopoly.resources.Game;
+import restopoly.resources.Mutex;
+import restopoly.resources.Player;
 import restopoly.util.CustomExclusionStrategy;
-import static restopoly.util.Ports.*;
 import restopoly.util.Service;
-import restopoly.resources.*;
+
 import java.util.ArrayList;
+
+import static restopoly.util.Ports.*;
 import static spark.Spark.*;
 
 public class GameService{
@@ -32,41 +37,60 @@ public class GameService{
                     .setExclusionStrategies(new CustomExclusionStrategy("restopoly.resources.Player.uri"))
                     .setExclusionStrategies(new CustomExclusionStrategy("restopoly.resources.Game.started"))
                     .setExclusionStrategies(new CustomExclusionStrategy("restopoly.resources.Game.components"))
+                    .setExclusionStrategies(new CustomExclusionStrategy("restopoly.resources.Game.uri"))
                     .create();
             return gson.toJson(games);
         });
 
         post("/games", (req, res) -> {
-            res.status(201);
-            res.header("Content-Type", "application/json");
-            Game game = new Game();
-            Components components = game.getComponents();
-            components.setGame(req.queryParams("gameUri"));
-            components.setDice(req.queryParams("diceUri"));
-            components.setBank(req.queryParams("bankUri"));
-            components.setBoard(req.queryParams("boardUri"));
-            components.setEvent(req.queryParams("eventUri"));
-            games.add(game);
-            mutex.addGame(game.getGameid());
-            Unirest.put(BANKSADDRESS+"/"+game.getGameid()).asString();
-            Unirest.put(BOARDSADDRESS+"/"+game.getGameid()).asString();
 
+            Game reqGame = new Gson().fromJson(req.body().toString(),Game.class);
 
             Gson gson = new GsonBuilder()
                     .setExclusionStrategies(new CustomExclusionStrategy("restopoly.resources.Game.players"))
                     .setExclusionStrategies(new CustomExclusionStrategy("restopoly.resources.Game.started"))
                     .setExclusionStrategies(new CustomExclusionStrategy("restopoly.resources.Game.components"))
+                    .setExclusionStrategies(new CustomExclusionStrategy("restopoly.resources.Game.uri"))
                     .create();
-            return gson.toJson(game);
+
+            if (reqGame == null){
+                res.status(201);
+                res.header("Content-Type", "application/json");
+                Game game = new Game();
+                Components components = game.getComponents();
+                components.setGame(req.queryParams("gameUri"));
+                components.setDice(req.queryParams("diceUri"));
+                components.setBank(req.queryParams("bankUri"));
+                components.setBoard(req.queryParams("boardUri"));
+                components.setEvent(req.queryParams("eventUri"));
+
+//          TODO - richtige Uri muss noch eingefügt werden
+                game.setUri("TestUri");
+
+                games.add(game);
+                mutex.addGame(game.getGameid());
+//                TODO - die müssen wieder einkommentiert werden
+//            Unirest.put(BANKSADDRESS+"/"+game.getGameid()).asString();
+//            Unirest.put(BOARDSADDRESS+"/"+game.getGameid()).asString();
+                return gson.toJson(game);
+            }
+            games.add(reqGame);
+            mutex.addGame(reqGame.getGameid());
+            return gson.toJson(reqGame);
         });
 
         get("/games/:gameid", (req, res) -> {
-            res.status(200);
+            res.status(404);
             res.header("Content-Type", "application/json");
             Gson gson = new GsonBuilder()
+                    .setExclusionStrategies(new CustomExclusionStrategy("restopoly.resources.Game.components"))
+                    .setExclusionStrategies(new CustomExclusionStrategy("restopoly.resources.Game.uri"))
                     .create();
             for(Game game : games){
-                if(game.getGameid().equals(req.params(":gameid"))) return gson.toJson(game);
+                if(game.getGameid().equals(req.params(":gameid"))){
+                    res.status(200);
+                    return gson.toJson(game);
+                }
             }
             return "";
         });
@@ -98,10 +122,14 @@ public class GameService{
         put("/games/:gameid/players/:playerid", (req, res) -> {
             Player player = new Player(req.params(":playerid"));
             player.setName(req.queryParams("name"));
-            player.setUri(req.queryParams("uri"));
+//            player.setUri(req.queryParams("uri"));
+//            TODO - IP und Port müssen angepasst werden
+//            player.setUri("http://localhost:4567/games/"+req.params("gameid") + "/players/" + req.params(":playerid").toLowerCase());
+            player.setUri("http://localhost:4567/games/"+req.params("gameid") + "/players/" + req.params(":playerid"));
+            System.out.println("PlayerUri: " + player.getUri());
             player.setPosition(0);
-            Unirest.put(BOARDSADDRESS+"/"+req.params(":gameid")+"/players/"+req.params(":playerid")).
-                    body(new Gson().toJson(player)).asString();
+//            TODO - SPÄTER wieder einkommentieren
+//            Unirest.put(BOARDSADDRESS+"/"+req.params(":gameid")+"/players/"+req.params(":playerid")).body(new Gson().toJson(player)).asString();
             Game game = null;
             for(Game g : games){
                 if(g.getGameid().equals(req.params(":gameid"))) game = g;
@@ -168,15 +196,17 @@ public class GameService{
 //      res 200 - { id:mario, name:"Mario", uri:"http://localhost:4567/player/mario", ready:false }
 //      res 404
         get("/games/:gameid/players/turn", (req, res) -> {
+            System.out.println("Player with Mutex: " +  mutex.playerWithMutex(req.params(":gameid")));
             res.status(400);
             String gameid = req.params(":gameid");
             String playerid = mutex.playerWithMutex(gameid);
+
             if (!playerid.isEmpty()) {
                 res.status(200);
                 Gson gson = new Gson();
                 return gson.toJson(getGame(gameid).getPlayer(playerid));
             }
-            return "";
+            return "Bla";
         });
 
 //      responses: 200 - already holding the mutex,
@@ -184,16 +214,22 @@ public class GameService{
 //      409 - already aquired by an other player
 
         put("/games/:gameid/players/:playerid/turn", (req, res) -> {
+//          TODO - Player wird als RequestBody übergeben - weitere Verwendung?
+//            Player player = new Gson().fromJson(req.body().toString(),Player.class);
+
             res.status(409);
             String gameid = req.params(":gameid");
             String playerid  = req.params(":playerid");
 
-            if(mutex.playerHasMutex(gameid,playerid)){
+            if(mutex.mutexBlockedByPlayer(gameid, playerid)){
+                System.out.println("mutexBlockedByPlayer");
                 res.status(200);
             }
+            System.out.println("MutexFree: " + mutex.isMutexFree(gameid));
             if (mutex.isMutexFree(gameid)){
+                System.out.println("ismMutexFree");
                 res.status(201);
-                mutex.changeMutexToPlayer(gameid,playerid);
+                mutex.changeMutexToPlayer(gameid, playerid);
             }
             return "";
         });

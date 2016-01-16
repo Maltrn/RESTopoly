@@ -1,16 +1,22 @@
 package restopoly.services;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
-import org.json.JSONObject;
-import restopoly.resources.*;
-import static restopoly.util.Ports.*;
+import restopoly.DTO.PlayerBoardDTO;
+import restopoly.DTO.RollDTO;
+import restopoly.resources.Board;
+import restopoly.resources.Field;
+import restopoly.resources.Place;
+import restopoly.resources.Player;
+import restopoly.util.CustomExclusionStrategy;
 import restopoly.util.Service;
 
 import java.util.ArrayList;
 
+import static restopoly.util.Ports.*;
 import static spark.Spark.*;
 
 /**
@@ -44,7 +50,9 @@ public class BoardService {
         });
 
         put("/boards/:gameid/players/:playerid", (req, res) -> {
+//            TODO - Rückgabe????
             Player player = new Gson().fromJson(req.body().toString(),Player.class);
+
             Board board = null;
             for(Board b : boards){
                 if(b.getGameid().equals(req.params(":gameid"))) board=b;
@@ -66,6 +74,7 @@ public class BoardService {
             return "";
         });
 
+// ------------------------------- Aufgabe 2.2 A ; 3 --------------------------------------------------------
         delete("/boards/:gameid", (req, res) -> {
             for(Board b : boards){
                 if(b.getGameid().equals(req.params(":gameid")))
@@ -95,6 +104,9 @@ public class BoardService {
 
 //        Gets a player
 //        response: {"id":"Mario","place":"/boards/42/places/4", "position":4}
+
+// ------------------------------- Aufgabe 2.2 A ; 2 --------------------------------------------------------
+//        TODO - im Aufruf Boards???? das macht keinen Sinn! Was ist mit dem Return-Wert?
         get("/boards/:gameid/players/:playerid", (req, res) -> {
             res.status(404);
             res.header("Content-Type", "application/json");
@@ -157,7 +169,7 @@ public class BoardService {
             return "";
         });
 
-        //TODO - was soll damit gemeint sein
+
 //      gives a throw of dice from the player to the board - Returns the new board state and possible options to take
 //      response: { player: "/boards/42/players/mario",
 //            board: { "fields":[{"place": "/boards/42/places/0" ,"players":[]},
@@ -167,34 +179,53 @@ public class BoardService {
 //            {"place": "/boards/42/places/4","players":[]} ] },
 //            events: [ { action: "transfer", uri: "/banks/42/transfer/12345",
 //            name:"Bank Transfer", reason:"Rent for Badstrasse" } ] }
-        post("/games/:gameid/players/:playerid/roll", (req, res) -> {
 
-            int roll1 = Integer.valueOf(req.attribute("roll1"));
-            int roll2 = Integer.valueOf(req.attribute("roll1"));
+// ------------------------------- Aufgabe 2.2 A ; 1 --------------------------------------------------------
+        post("/boards/:gameid/players/:playerid/roll", (req, res) -> {
+            res.status(404);
+
+            RollDTO rollDto = new Gson().fromJson(req.body().toString(),RollDTO.class);
+
+            int roll1 = rollDto.getRoll1().getNumber();
+            int roll2 = rollDto.getRoll2().getNumber();
 
             res.header("Content-Type", "application/json");
             String p_ID = req.params(":playerid");
             String g_ID = req.params(":gameid");
-            Gson gson = new Gson();
+
+//          TODO - Prüfung auf Mutex!!!!!!!!!!!!!!!!
+
+            Gson gson = new GsonBuilder()
+                    .setExclusionStrategies(new CustomExclusionStrategy("restopoly.resources.Player.uri"))
+                    .setExclusionStrategies(new CustomExclusionStrategy("restopoly.resources.Player.name"))
+                    .setExclusionStrategies(new CustomExclusionStrategy("restopoly.resources.Board.gameid"))
+                    .setExclusionStrategies(new CustomExclusionStrategy("restopoly.resources.Board.positions"))
+                    .create();
+
             Player p= getPlayer(g_ID, p_ID);
             Board b = getGameB(g_ID);
-            JSONObject jsonObject = null;
+//            JSONObject jsonObject = null;
+//            System.out.println("p: --->>>" + p);
+//            System.out.println("b: --->>>" + b);
+//          TODO - Spielerposition im Gameservice updaten????
+            PlayerBoardDTO playerBoardDTO = null;
             if (b!=null && p != null){
                 res.status(200);
 
                 p.setPosition(p.getPosition()+(roll1+roll2));
+                playerBoardDTO = new PlayerBoardDTO(p, b);
 
-                jsonObject = new JSONObject();
-                jsonObject.put("player", "/boards/"+g_ID+"/players/"+p.getName());
-                jsonObject.put("board", b);
+//                System.out.println("playerBoard: " + playerBoardDTO);
+                return gson.toJson(playerBoardDTO);
 
-// ToDo - Nur ausgelöste Events sollen zurückgegeben werden
-                HttpResponse eventRes  = Unirest.get(EVENTSADDRESS + "/event/"+g_ID).asJson();
-                Event event = gson.fromJson(eventRes.getBody().toString(), Event.class);
-
-                jsonObject.put("events", event);
+// ToDo - SPÄTER! -Nur ausgelöste Events sollen zurückgegeben werden
+// TODO - possible Options to take???
+//                HttpResponse eventRes  = Unirest.get(EVENTSADDRESS + "/event/"+g_ID).asJson();
+//                Event event = gson.fromJson(eventRes.getBody().toString(), Event.class);
+//
+//                jsonObject.put("events", event);
             }
-            return gson.toJson(jsonObject);
+            return "";
         });
 
 
@@ -209,7 +240,7 @@ public class BoardService {
             for(Board b : boards){
                 if(b.getGameid().equals(req.params(":gameid")))
                     for(int i = 0; i < b.getFields().size(); i++){
-                        // gibt aktuell die Places des Fields ohne Player zurück
+                        // TODO - gibt aktuell die Places des Fields ohne Player zurück
                         if(b.getField(i).getPlayers().size() == 0) {
 //                          TODO - welche Places sind available?
                             result.add("boards/" + req.params(":gameid") + "/places/" + i);

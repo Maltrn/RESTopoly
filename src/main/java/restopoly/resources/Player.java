@@ -1,7 +1,5 @@
 package restopoly.resources;
 
-import restopoly.resources.Place;
-
 /**
  * Created by Krystian.Graczyk on 27.10.15.
  */
@@ -10,12 +8,17 @@ public class Player {
     private String id;
     private String name;
     private String uri;
-    private Place place;
+    private Place place = null;
     private int position;
     private boolean ready = false;
 
     public Player(String playerid){
         this.id = playerid;
+    }
+
+    public Player(String playerid, String playername){
+        this.id = playerid;
+        this.name = playername;
     }
 
 
