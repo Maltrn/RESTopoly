@@ -5,18 +5,14 @@ package restopoly.services;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.mashape.unirest.http.Unirest;
-import com.mashape.unirest.http.exceptions.UnirestException;
 import restopoly.resources.Components;
 import restopoly.resources.Game;
 import restopoly.resources.Mutex;
 import restopoly.resources.Player;
 import restopoly.util.CustomExclusionStrategy;
-import restopoly.util.Service;
 
 import java.util.ArrayList;
 
-import static restopoly.util.Ports.*;
 import static spark.Spark.*;
 
 public class GameService{
@@ -24,6 +20,8 @@ public class GameService{
     private static ArrayList<Game> games = new ArrayList<>();
 
     public static void main(String[] args) {
+
+//        port(9090);
 
         Mutex mutex = new Mutex();
 
@@ -106,6 +104,23 @@ public class GameService{
             return gson.toJson(game.getPlayers());
         });
 
+//      gets the player holding the turn mutex
+//      res 200 - { id:mario, name:"Mario", uri:"http://localhost:4567/player/mario", ready:false }
+//      res 404
+        get("/games/:gameid/players/turn", (req, res) -> {
+            System.out.println("Player with Mutex: " +  mutex.playerWithMutex(req.params(":gameid")));
+            res.status(400);
+            String gameid = req.params(":gameid");
+            String playerid = mutex.playerWithMutex(gameid);
+
+            if (!playerid.isEmpty()) {
+                res.status(200);
+                Gson gson = new Gson();
+                return gson.toJson(getGame(gameid).getPlayer(playerid));
+            }
+            return "Bla";
+        });
+
         get("/games/:gameid/players/:playerid", (req, res) -> {
             res.status(200);
             res.header("Content-Type", "application/json");
@@ -124,9 +139,8 @@ public class GameService{
             player.setName(req.queryParams("name"));
 //            player.setUri(req.queryParams("uri"));
 //            TODO - IP und Port müssen angepasst werden
-//            player.setUri("http://localhost:4567/games/"+req.params("gameid") + "/players/" + req.params(":playerid").toLowerCase());
             player.setUri("http://localhost:4567/games/"+req.params("gameid") + "/players/" + req.params(":playerid"));
-            System.out.println("PlayerUri: " + player.getUri());
+//            System.out.println("PlayerUri: " + player.getUri());
             player.setPosition(0);
 //            TODO - SPÄTER wieder einkommentieren
 //            Unirest.put(BOARDSADDRESS+"/"+req.params(":gameid")+"/players/"+req.params(":playerid")).body(new Gson().toJson(player)).asString();
@@ -136,6 +150,16 @@ public class GameService{
             }
             game.addPlayer(player);
             mutex.addPlayer(game.getGameid(), player.getId());
+            return "";
+        });
+
+//      releases the mutex
+//      res - keine
+        delete("/games/:gameid/players/turn", (req, res) -> {
+            String gameid = req.params(":gameid");
+            if(getGame(gameid) != null){
+                mutex.addTurn(gameid, mutex.playerWithMutex(gameid));
+            }
             return "";
         });
 
@@ -192,23 +216,6 @@ public class GameService{
             return "";
         });
 
-//      gets the player holding the turn mutex
-//      res 200 - { id:mario, name:"Mario", uri:"http://localhost:4567/player/mario", ready:false }
-//      res 404
-        get("/games/:gameid/players/turn", (req, res) -> {
-            System.out.println("Player with Mutex: " +  mutex.playerWithMutex(req.params(":gameid")));
-            res.status(400);
-            String gameid = req.params(":gameid");
-            String playerid = mutex.playerWithMutex(gameid);
-
-            if (!playerid.isEmpty()) {
-                res.status(200);
-                Gson gson = new Gson();
-                return gson.toJson(getGame(gameid).getPlayer(playerid));
-            }
-            return "Bla";
-        });
-
 //      responses: 200 - already holding the mutex,
 //      201 - aquired the mutex,
 //      409 - already aquired by an other player
@@ -222,42 +229,32 @@ public class GameService{
             String playerid  = req.params(":playerid");
 
             if(mutex.mutexBlockedByPlayer(gameid, playerid)){
-                System.out.println("mutexBlockedByPlayer");
                 res.status(200);
             }
             System.out.println("MutexFree: " + mutex.isMutexFree(gameid));
             if (mutex.isMutexFree(gameid)){
-                System.out.println("ismMutexFree");
                 res.status(201);
                 mutex.changeMutexToPlayer(gameid, playerid);
             }
             return "";
         });
 
-//      releases the mutex
-//      res - keine
-        delete("/games/:gameid/players/turn", (req, res) -> {
-            String gameid = req.params(":gameid");
-            if(getGame(gameid) != null){
-                mutex.addTurn(gameid, mutex.playerWithMutex(gameid));
-            }
-            return "";
-        });
 
-        try {
-            Unirest.post("http://vs-docker.informatik.haw-hamburg.de:8053/services")
-                    .header("accept", "application/json")
-                    .header("Content-Type", "application/json")
-                    .queryString("name", "GAMES")
-                    .queryString("description", "Games Service")
-                    .queryString("service", "games")
-                    .queryString("uri", GAMESADDRESS)
-                    .body(new Gson().toJson(new Service("GAMES", "Games Service", "games", GAMESADDRESS)))
-                    .asJson();
-        } catch (UnirestException e) {
-            e.printStackTrace();
 
-        }
+//        try {
+//            Unirest.post("http://vs-docker.informatik.haw-hamburg.de:8053/services")
+//                    .header("accept", "application/json")
+//                    .header("Content-Type", "application/json")
+//                    .queryString("name", "GAMES")
+//                    .queryString("description", "Games Service")
+//                    .queryString("service", "games")
+//                    .queryString("uri", GAMESADDRESS)
+//                    .body(new Gson().toJson(new Service("GAMES", "Games Service", "games", GAMESADDRESS)))
+//                    .asJson();
+//        } catch (UnirestException e) {
+//            e.printStackTrace();
+//
+//        }
     }
 
     public static Game getGame(String gameid){

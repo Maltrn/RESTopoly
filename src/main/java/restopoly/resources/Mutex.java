@@ -52,16 +52,12 @@ public class Mutex {
     }
 
     public void changeMutexToPlayer(String gameId, String playerId){
-        System.out.println("ContainsGame: " + containGameMutex(gameId));
         if(containGameMutex(gameId)){
             Iterator<Map.Entry<String, InnerMutex>> iterator = mapMutex.get(gameId).entrySet().iterator();
             boolean mutex_is_free = true;
-            System.out.println("iteratorHasNext: " + iterator.hasNext());
             while (iterator.hasNext()){
-//                System.out.println("iterator next: " + iterator.next());
                 Map.Entry<String, InnerMutex> entry = iterator.next();
                 InnerMutex mutex = entry.getValue();
-                System.out.println("Mutex Value: " + entry.getValue());
                 if (mutex.isMutexBlocked()) mutex_is_free = false;
             }
             if (mutex_is_free) mapMutex.get(gameId).get(playerId).setMutex(mutex_is_free);
