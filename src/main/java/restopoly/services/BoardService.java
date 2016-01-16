@@ -25,8 +25,9 @@ import static spark.Spark.*;
 public class BoardService {
     private static ArrayList<Board> boards = new ArrayList<>();
 
-
     public static void main(String[] args) {
+
+        port(8090);
 
         get("/boards", (req, res) -> {
             res.status(200);
@@ -44,8 +45,8 @@ public class BoardService {
 
             board.setFields(fields);
             boards.add(board);
-//          TODO - Broker anlegen
-            Unirest.put(BROKERSADDRESS + "/" + req.params(":gameid"));
+//          TODO - Broker anlegen - später wieder rein
+//            Unirest.put(BROKERSADDRESS + "/" + req.params(":gameid"));
             return "";
         });
 
@@ -104,9 +105,6 @@ public class BoardService {
 
 //        Gets a player
 //        response: {"id":"Mario","place":"/boards/42/places/4", "position":4}
-
-// ------------------------------- Aufgabe 2.2 A ; 2 --------------------------------------------------------
-//        TODO - im Aufruf Boards???? das macht keinen Sinn! Was ist mit dem Return-Wert?
         get("/boards/:gameid/players/:playerid", (req, res) -> {
             res.status(404);
             res.header("Content-Type", "application/json");
@@ -183,47 +181,51 @@ public class BoardService {
 // ------------------------------- Aufgabe 2.2 A ; 1 --------------------------------------------------------
         post("/boards/:gameid/players/:playerid/roll", (req, res) -> {
             res.status(404);
-
-            RollDTO rollDto = new Gson().fromJson(req.body().toString(),RollDTO.class);
-
-            int roll1 = rollDto.getRoll1().getNumber();
-            int roll2 = rollDto.getRoll2().getNumber();
-
             res.header("Content-Type", "application/json");
-            String p_ID = req.params(":playerid");
-            String g_ID = req.params(":gameid");
 
-//          TODO - Prüfung auf Mutex!!!!!!!!!!!!!!!!
+            Gson gsonMutex = new Gson();
+//            HttpResponse playerResponse  = Unirest.get(GAMESADDRESS + "/" + req.params(":gameid") + "/players/turn").asJson();
+            HttpResponse playerResponse  = Unirest.get(GAMESADDRESS + "/games/" + req.params(":gameid") + "/players/turn").asJson();
 
-            Gson gson = new GsonBuilder()
-                    .setExclusionStrategies(new CustomExclusionStrategy("restopoly.resources.Player.uri"))
-                    .setExclusionStrategies(new CustomExclusionStrategy("restopoly.resources.Player.name"))
-                    .setExclusionStrategies(new CustomExclusionStrategy("restopoly.resources.Board.gameid"))
-                    .setExclusionStrategies(new CustomExclusionStrategy("restopoly.resources.Board.positions"))
-                    .create();
+            Player mutexPlayer = gsonMutex.fromJson(playerResponse.getBody().toString(), Player.class);
 
-            Player p= getPlayer(g_ID, p_ID);
-            Board b = getGameB(g_ID);
-//            JSONObject jsonObject = null;
-//            System.out.println("p: --->>>" + p);
-//            System.out.println("b: --->>>" + b);
-//          TODO - Spielerposition im Gameservice updaten????
-            PlayerBoardDTO playerBoardDTO = null;
-            if (b!=null && p != null){
-                res.status(200);
+            if (mutexPlayer!= null && mutexPlayer.getId().equals(req.params(":playerid"))) {
+                System.out.println("If- Player " +mutexPlayer.getId());
 
-                p.setPosition(p.getPosition()+(roll1+roll2));
-                playerBoardDTO = new PlayerBoardDTO(p, b);
+                RollDTO rollDto = new Gson().fromJson(req.body().toString(),RollDTO.class);
 
-//                System.out.println("playerBoard: " + playerBoardDTO);
-                return gson.toJson(playerBoardDTO);
+                int roll1 = rollDto.getRoll1().getNumber();
+                int roll2 = rollDto.getRoll2().getNumber();
 
-// ToDo - SPÄTER! -Nur ausgelöste Events sollen zurückgegeben werden
-// TODO - possible Options to take???
+                String p_ID = req.params(":playerid");
+                String g_ID = req.params(":gameid");
+
+                Gson gson = new GsonBuilder()
+                        .setExclusionStrategies(new CustomExclusionStrategy("restopoly.resources.Player.uri"))
+                        .setExclusionStrategies(new CustomExclusionStrategy("restopoly.resources.Player.name"))
+                        .setExclusionStrategies(new CustomExclusionStrategy("restopoly.resources.Board.gameid"))
+                        .setExclusionStrategies(new CustomExclusionStrategy("restopoly.resources.Board.positions"))
+                        .create();
+
+                Player p= getPlayer(g_ID, p_ID);
+                Board b = getGameB(g_ID);
+
+                PlayerBoardDTO playerBoardDTO = null;
+                if (b!=null && p != null){
+                    res.status(200);
+
+                    p.setPosition(p.getPosition()+(roll1+roll2));
+                    playerBoardDTO = new PlayerBoardDTO(p, b);
+
+                    return gson.toJson(playerBoardDTO);
+
+//                  TODO - SPÄTER! -Nur ausgelöste Events sollen zurückgegeben werden
+//                  TODO - possible Options to take???
 //                HttpResponse eventRes  = Unirest.get(EVENTSADDRESS + "/event/"+g_ID).asJson();
 //                Event event = gson.fromJson(eventRes.getBody().toString(), Event.class);
 //
 //                jsonObject.put("events", event);
+                }
             }
             return "";
         });

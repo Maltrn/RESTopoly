@@ -5,11 +5,14 @@ package restopoly.services;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.mashape.unirest.http.Unirest;
+import com.mashape.unirest.http.exceptions.UnirestException;
 import restopoly.resources.Components;
 import restopoly.resources.Game;
 import restopoly.resources.Mutex;
 import restopoly.resources.Player;
 import restopoly.util.CustomExclusionStrategy;
+import restopoly.util.Service;
 
 import java.util.ArrayList;
 
@@ -62,18 +65,18 @@ public class GameService{
                 components.setBoard(req.queryParams("boardUri"));
                 components.setEvent(req.queryParams("eventUri"));
 
-//          TODO - richtige Uri muss noch eingefügt werden
-                game.setUri("TestUri");
-
                 games.add(game);
                 mutex.addGame(game.getGameid());
-//                TODO - die müssen wieder einkommentiert werden
-//            Unirest.put(BANKSADDRESS+"/"+game.getGameid()).asString();
-//            Unirest.put(BOARDSADDRESS+"/"+game.getGameid()).asString();
+            Unirest.put(restopoly.util.Ports.BANKSADDRESS + "/"+game.getGameid()).asString();
+            Unirest.put(restopoly.util.Ports.BOARDSADDRESS + "/"+game.getGameid()).asString();
+//                Unirest.put("http://localhost:8090/boards/"+game.getGameid()).asString();
                 return gson.toJson(game);
             }
             games.add(reqGame);
             mutex.addGame(reqGame.getGameid());
+//            Unirest.put("http://localhost:8090/boards/"+reqGame.getGameid()).asString();
+            Unirest.put(restopoly.util.Ports.BANKSADDRESS + "/"+reqGame.getGameid()).asString();
+            Unirest.put(restopoly.util.Ports.BOARDSADDRESS + "/"+reqGame.getGameid()).asString();
             return gson.toJson(reqGame);
         });
 
@@ -117,6 +120,7 @@ public class GameService{
             return "";
         });
 
+// ------------------------------- Aufgabe 2.2 A ; 2 --------------------------------------------------------
         get("/games/:gameid/players/:playerid", (req, res) -> {
             res.status(200);
             res.header("Content-Type", "application/json");
@@ -133,12 +137,8 @@ public class GameService{
         put("/games/:gameid/players/:playerid", (req, res) -> {
             Player player = new Player(req.params(":playerid"));
             player.setName(req.queryParams("name"));
-//            player.setUri(req.queryParams("uri"));
-//            TODO - IP und Port müssen angepasst werden
-            player.setUri("http://localhost:4567/games/"+req.params("gameid") + "/players/" + req.params(":playerid"));
             player.setPosition(0);
-//            TODO - SPÄTER wieder einkommentieren
-//            Unirest.put(BOARDSADDRESS+"/"+req.params(":gameid")+"/players/"+req.params(":playerid")).body(new Gson().toJson(player)).asString();
+            Unirest.put(restopoly.util.Ports.BOARDSADDRESS+"/"+req.params(":gameid")+"/players/"+req.params(":playerid")).body(new Gson().toJson(player)).asString();
             Game game = null;
             for(Game g : games){
                 if(g.getGameid().equals(req.params(":gameid"))) game = g;
@@ -155,6 +155,7 @@ public class GameService{
             }
             return "";
         });
+
 
         delete("/games/:gameid/players/:playerid", (req, res) -> {
             Game game = null;
@@ -187,9 +188,6 @@ public class GameService{
                 mutex.releaseMutex(gameId);
             }
 
-//          TODO - Rückgabe laut raml -> nichts
-//            Gson gson = new GsonBuilder().create();
-//            return gson.toJson(player);
             return "";
 
         });
@@ -206,8 +204,6 @@ public class GameService{
             return gson.toJson(player.isReady());
         });
 
-//       gets the currently active player that shall take action
-//        res 200 - { id:mario, name:"Mario", uri:"http://localhost:4567/player/mario", ready:false }
         get("/games/:gameid/players/current", (req, res) -> {
             res.status(400);
             String gameid = req.params(":gameid");
@@ -223,7 +219,6 @@ public class GameService{
         put("/games/:gameid/players/:playerid/turn", (req, res) -> {
 //          TODO - Player wird als RequestBody übergeben - weitere Verwendung?
 //            Player player = new Gson().fromJson(req.body().toString(),Player.class);
-
             res.status(409);
             String gameid = req.params(":gameid");
             String playerid  = req.params(":playerid");
@@ -239,21 +234,20 @@ public class GameService{
         });
 
 
+        try {
+            Unirest.post("http://vs-docker.informatik.haw-hamburg.de:8053/services")
+                    .header("accept", "application/json")
+                    .header("Content-Type", "application/json")
+                    .queryString("name", "GAMES")
+                    .queryString("description", "Games Service")
+                    .queryString("service", "games")
+                    .queryString("uri", restopoly.util.Ports.GAMESADDRESS)
+                    .body(new Gson().toJson(new Service("GAMES", "Games Service", "games", restopoly.util.Ports.GAMESADDRESS)))
+                    .asJson();
+        } catch (UnirestException e) {
+            e.printStackTrace();
 
-//        try {
-//            Unirest.post("http://vs-docker.informatik.haw-hamburg.de:8053/services")
-//                    .header("accept", "application/json")
-//                    .header("Content-Type", "application/json")
-//                    .queryString("name", "GAMES")
-//                    .queryString("description", "Games Service")
-//                    .queryString("service", "games")
-//                    .queryString("uri", GAMESADDRESS)
-//                    .body(new Gson().toJson(new Service("GAMES", "Games Service", "games", GAMESADDRESS)))
-//                    .asJson();
-//        } catch (UnirestException e) {
-//            e.printStackTrace();
-//
-//        }
+        }
     }
 
     public static Game getGame(String gameid){
