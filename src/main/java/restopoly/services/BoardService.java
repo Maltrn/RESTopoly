@@ -27,7 +27,7 @@ public class BoardService {
 
     public static void main(String[] args) {
 
-        port(8090);
+//        port(8090);
 
         get("/boards", (req, res) -> {
             res.status(200);
