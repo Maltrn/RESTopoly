@@ -7,6 +7,7 @@ import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import restopoly.resources.Account;
 import restopoly.resources.Bank;
+import restopoly.resources.Event;
 import restopoly.resources.Player;
 import restopoly.util.CustomExclusionStrategy;
 import restopoly.util.Ports;
@@ -124,6 +125,8 @@ public class BankService {
                     Gson gson = new GsonBuilder()
                             .setExclusionStrategies(new CustomExclusionStrategy("restopoly.resources.Account.player"))
                             .create();
+                    Event event = new Event("type","transfer to amount","resource","reason",to.getPlayer());
+                    Unirest.post(restopoly.util.Ports.EVENTSADDRESS).queryString("gameid", req.params(":gameid")).body(new Gson().toJson(event)).asString();
                     return gson.toJson(to);
                 } catch (Throwable e) {
                     to.setSaldo(saldo);
@@ -158,6 +161,8 @@ public class BankService {
                     Gson gson = new GsonBuilder()
                             .setExclusionStrategies(new CustomExclusionStrategy("restopoly.resources.Account.player"))
                             .create();
+                    Event event = new Event("type","transfer from amount","resource","reason",from.getPlayer());
+                    Unirest.post(restopoly.util.Ports.EVENTSADDRESS).queryString("gameid", req.params(":gameid")).body(new Gson().toJson(event)).asString();
                     return gson.toJson(from);
                 } catch (Throwable e) {
                     from.setSaldo(saldo);
@@ -193,6 +198,8 @@ public class BankService {
                 try {
                     from.setSaldo(fromsaldo - Integer.parseInt(req.params(":amount")));
                     to.setSaldo(tosaldo + Integer.parseInt(req.params(":amount")));
+                    Event event = new Event("type","transfer from to amount","resource","reason",to.getPlayer());
+                    Unirest.post(restopoly.util.Ports.EVENTSADDRESS).queryString("gameid", req.params(":gameid")).body(new Gson().toJson(event)).asString();
                     return "";
                 } catch (Throwable e) {
                     from.setSaldo(fromsaldo);
