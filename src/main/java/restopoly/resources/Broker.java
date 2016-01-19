@@ -7,16 +7,6 @@ import java.util.ArrayList;
  */
 public class Broker {
 
-//    - broker: |
-//    {
-//        "type": "object",
-//            "$schema": "http://json-schema.org/draft-03/schema",
-//            "id": "broker",
-//            "properties": {
-//        "estates": { "type":"string", "required": true, "description":"uri to the estates managed by the broker" }
-//    }
-//    }
-
     String gameid;
     ArrayList<Estate> estates = new ArrayList<>();
 

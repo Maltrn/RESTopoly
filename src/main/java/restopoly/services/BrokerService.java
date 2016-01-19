@@ -7,6 +7,7 @@ import org.apache.http.HttpStatus;
 import restopoly.resources.Broker;
 import restopoly.resources.Estate;
 import restopoly.resources.Event;
+import restopoly.resources.Player;
 import restopoly.util.Ports;
 
 import java.util.ArrayList;
@@ -88,9 +89,12 @@ public class BrokerService {
                     if (estate.getPlace().equals(Ports.BOARDSADDRESS+"/fields/places/" + p_id)){
 //                        TODO - Banktransfer vom Vister zum Owner
 //                        TODO - return a list of Events
-                        HttpResponse bankRes  = Unirest.get(Ports.BANKSADDRESS + "/" + g_id + "/transfer/from/" + pl_id + "/to/" + estate.getOwner() + "/" + estate.getRent()).asJson();
-                        Event[] resultarray = gson.fromJson(bankRes.getBody().toString(), Event[].class);
-                        return gson.toJson(resultarray);
+//                        TODO - Transaktional????
+                        if (!estate.getOwner().isEmpty()) {
+                            HttpResponse bankRes  = Unirest.get(Ports.BANKSADDRESS + "/" + g_id + "/transfer/from/" + pl_id + "/to/" + estate.getOwner() + "/" + estate.getRent()).asJson();
+                            Event[] resultarray = gson.fromJson(bankRes.getBody().toString(), Event[].class);
+                            return gson.toJson(resultarray);
+                        }
                     }
                 }
             }
@@ -98,44 +102,36 @@ public class BrokerService {
         });
 
 //      Todo - Buy the place in question. It will fail if it is not for sale
-//        post("/brokers/:gameid/places/:placeid/owner", (req, res) -> {
-//            res.status(HttpStatus.SC_CONFLICT);
-//            res.header("Content-Type", "application/json");
-//            String g_id = req.params(":gameid");
-//            String p_id = req.params(":placeid");
-//            Broker tBroker = getBroker(g_id);
-//            Broker copyForm =  tBroker.createCopy();
-//            try{
-//                if (tBroker != null){
-//                    boolean free = tBroker.isAvalible(p_id);
-//                    if (free){
-//                        //ToDO - wie kommt man an den PlayerId welcher das Feld Kaufen soll
-//                        String url = "/banks/:gameid/transfer/from/:from/:amount";
-//                        String tPrice = tBroker.getPrice(p_id);
-//                        String playerID= "";
-//                        HttpResponse response = Unirest.post(BANKSADDRESS + "/" + g_id + "/transfer/from/" + playerID + "/" + tPrice).asJson();
-//                        if(response.getStatus() == HttpStatus.SC_CREATED){
-//                            tBroker.buyField(p_id,playerID);
-//
-//                            Gson gson = new Gson();
-//                            JSONObject jsonObject = null;
-//                            jsonObject = new JSONObject();
-//                            HttpResponse eventRes  = Unirest.get(EVENTSADDRESS + "/event/"+req.params(":gameid")).asJson();
-//                            Event event = gson.fromJson(eventRes.getBody().toString(), Event.class);
-//                            res.status(HttpStatus.SC_OK);
-//                            jsonObject.put("events", event);
-////                            TODO - Welcher Player??
-//                            jsonObject.put("player", playerID);
-//                            return gson.toJson(jsonObject);
-//                        }
-//                    }
-//                }
-//            }catch (Exception e){
-//                brokers.remove(getBrokerPos(tBroker));
-//                brokers.add(copyForm);
-//            }
-//            return "";
-//        });
+        post("/brokers/:gameid/places/:placeid/owner", (req, res) -> {
+            res.status(HttpStatus.SC_CONFLICT);
+            res.header("Content-Type", "application/json");
+            String g_id = req.params(":gameid");
+            String p_id = req.params(":placeid");
+
+            Broker broker = getBroker(g_id);
+            Gson gson = new Gson();
+
+            Player reqPlayer = gson.fromJson(req.body().toString(), Player.class);
+
+            if (broker != null && reqPlayer!=null) {
+                for (Estate estate : broker.getEstates()) {
+                    if (estate.getPlace().equals(Ports.BOARDSADDRESS+"/fields/places/" + p_id)){
+//                        TODO - Prüfung auf isEmpty()???
+                        if (!estate.getOwner().isEmpty()){
+                            res.status(HttpStatus.SC_OK);
+//                            Todo - Transaktion einleiten
+                            HttpResponse bankRes  = Unirest.get(Ports.BANKSADDRESS + "/" + g_id + "/transfer/from/" + reqPlayer.getId()+"/"+estate.getValue()).asJson();
+                            Event[] resultarray = gson.fromJson(bankRes.getBody().toString(), Event[].class);
+//                            Todo - Events zurückgeben
+                            return gson.toJson(resultarray);
+                        }
+                        res.status(409);
+                        return "";
+                    }
+                }
+            }
+            return "";
+        });
 
 
 

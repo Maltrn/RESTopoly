@@ -57,6 +57,14 @@ public class BoardService {
 
             board.setFields(fields);
             boards.add(board);
+
+            Unirest.put(Ports.BROKERSADDRESS + "/" + req.params(":gameid"));
+
+            for(Field field : fields){
+                Unirest.put(Ports.BROKERSADDRESS + "/" + req.params(":gameid") + "/places/" + field.getPlace().getName());
+            }
+
+
             Unirest.put(uri_brooker + "/" + req.params(":gameid"))
                     .header(Ports.GAME_KEY, Ports.GAMESADDRESS)
                     .header(Ports.DICE_KEY, Ports.DICEADDRESS)
@@ -68,7 +76,6 @@ public class BoardService {
         });
 
         put("/boards/:gameid/players/:playerid", (req, res) -> {
-//            TODO - Rückgabe????
             Player player = new Gson().fromJson(req.body().toString(),Player.class);
 
             Board board = null;
@@ -232,6 +239,9 @@ public class BoardService {
                     res.status(200);
 
                     p.setPosition(p.getPosition()+(roll1+roll2));
+//                   TODO - Boards meldet Player als Visitor an!
+                    Unirest.post(Ports.BROKERSADDRESS + "/" + g_ID + "/places/" + p.getPosition() + "/visit/" + p.getId());
+
                     playerBoardDTO = new PlayerBoardDTO(p, b);
 
                     return gson.toJson(playerBoardDTO);
