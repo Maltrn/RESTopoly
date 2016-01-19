@@ -47,8 +47,23 @@ public class GameService{
         });
 
         post("/games", (req, res) -> {
+            res.header("Content-Type", "application/json");
+            // Client from GUI
+//            res.header(Ports.GAME_KEY, req.headers(Ports.GAME_KEY));
+//            res.header(Ports.DICE_KEY, req.headers(Ports.DICE_KEY));
+//            res.header(Ports.BANK_KEY, req.headers(Ports.BANK_KEY));
+//            res.header(Ports.BOARD_KEY, req.headers(Ports.BOARD_KEY));
+//            res.header(Ports.EVENT_KEY, req.headers(Ports.EVENT_KEY));
+            // Client from PostMan
+            res.header(Ports.GAME_KEY, Ports.GAMESADDRESS);
+            res.header(Ports.DICE_KEY, Ports.DICEADDRESS);
+            res.header(Ports.BANK_KEY, Ports.BANKSADDRESS);
+            res.header(Ports.BOARD_KEY, Ports.BOARDSADDRESS);
+            res.header(Ports.EVENT_KEY, Ports.EVENTSADDRESS);
 
-            Game reqGame = new Gson().fromJson(req.body().toString(),Game.class);
+
+
+            Game reqGame = new Gson().fromJson(req.body().toString(), Game.class);
 
             Gson gson = new GsonBuilder()
                     .setExclusionStrategies(new CustomExclusionStrategy("restopoly.resources.Game.players"))
@@ -57,29 +72,24 @@ public class GameService{
                     .setExclusionStrategies(new CustomExclusionStrategy("restopoly.resources.Game.uri"))
                     .create();
             res.status(HttpStatus.SC_OK);
-            if (reqGame == null){
+            if (reqGame == null) {
                 res.status(HttpStatus.SC_CREATED);
-                res.header("Content-Type", "application/json");
-                res.header(Ports.GAME_KEY, Ports.GAMESADDRESS);
-                res.header(Ports.DICE_KEY, Ports.DICEADDRESS);
-                res.header(Ports.BANK_KEY, Ports.BANKSADDRESS);
-                res.header(Ports.BOARD_KEY, Ports.BOARDSADDRESS);
-                res.header(Ports.EVENT_KEY, Ports.EVENTSADDRESS);
-                Game game = new Game();
-                Components components = game.getComponents();
-                components.setGame(req.queryParams("gameUri"));
-                components.setDice(req.queryParams("diceUri"));
-                components.setBank(req.queryParams("bankUri"));
-                components.setBoard(req.queryParams("boardUri"));
-                components.setEvent(req.queryParams("eventUri"));
+                reqGame = new Game();
+                Components components = reqGame.getComponents();
+                components.setGame(req.headers(Ports.GAME_KEY));
+                components.setDice(req.headers(Ports.DICE_KEY));
+                components.setBank(req.headers(Ports.BANK_KEY));
+                components.setBoard(req.headers(Ports.BOARD_KEY));
+                components.setEvent(req.headers(Ports.EVENT_KEY));
 
 //          TODO - richtige Uri muss noch eingefügt werden
-                game.setUri("TestUri");
-
-                games.add(game);
-                mutex.addGame(game.getGameid());
-//
-//                Unirest.put(restopoly.util.Ports.BANKSADDRESS + "/"+game.getGameid())
+                reqGame.setUri(Ports.GAMESADDRESS + "/" + reqGame.getGameid());
+             //   return gson.toJson(game);
+            }
+            games.add(reqGame);
+            mutex.addGame(reqGame.getGameid());
+            //ToDo Muss wieder rein
+//                Unirest.put(restopoly.util.Ports.BANKSADDRESS + "/"+reqGame.getGameid())
 //                    .header(Ports.GAME_KEY, Ports.GAMESADDRESS)
 //                    .header(Ports.DICE_KEY, Ports.DICEADDRESS)
 //                    .header(Ports.BANK_KEY, Ports.BANKSADDRESS)
@@ -87,7 +97,7 @@ public class GameService{
 //                    .header(Ports.EVENT_KEY, Ports.EVENTSADDRESS)
 //                    .asString();
 //
-//                Unirest.put(restopoly.util.Ports.BOARDSADDRESS + "/"+game.getGameid())
+//                Unirest.put(restopoly.util.Ports.BOARDSADDRESS + "/"+reqGame.getGameid())
 //                    .header(Ports.GAME_KEY, Ports.GAMESADDRESS)
 //                    .header(Ports.DICE_KEY, Ports.DICEADDRESS)
 //                    .header(Ports.BANK_KEY, Ports.BANKSADDRESS)
@@ -95,7 +105,8 @@ public class GameService{
 //                    .header(Ports.EVENT_KEY, Ports.EVENTSADDRESS)
 //                    .asString();
 
-                Unirest.put("http://localhost:8090/boards/"+game.getGameid())
+//                Unirest.put("http://localhost:8090/boards/" + reqGame.getGameid())
+                Unirest.put(req.headers(Ports.BOARD_KEY)+"/" + reqGame.getGameid())
                         .header(Ports.GAME_KEY, Ports.GAMESADDRESS)
                         .header(Ports.DICE_KEY, Ports.DICEADDRESS)
                         .header(Ports.BANK_KEY, Ports.BANKSADDRESS)
@@ -103,15 +114,6 @@ public class GameService{
                         .header(Ports.EVENT_KEY, Ports.EVENTSADDRESS)
                         .header(Ports.BROOKER_KEY, Ports.BROKERSADDRESS)
                         .asString();
-
-
-                return gson.toJson(game);
-            }
-            games.add(reqGame);
-            mutex.addGame(reqGame.getGameid());
-//            Unirest.put("http://localhost:8090/boards/"+reqGame.getGameid()).asString();
-            Unirest.put(restopoly.util.Ports.BANKSADDRESS + "/"+reqGame.getGameid()).asString();
-            Unirest.put(restopoly.util.Ports.BOARDSADDRESS + "/"+reqGame.getGameid()).asString();
             return gson.toJson(reqGame);
         });
 
@@ -122,8 +124,8 @@ public class GameService{
                     .setExclusionStrategies(new CustomExclusionStrategy("restopoly.resources.Game.components"))
                     .setExclusionStrategies(new CustomExclusionStrategy("restopoly.resources.Game.uri"))
                     .create();
-            for(Game game : games){
-                if(game.getGameid().equals(req.params(":gameid"))){
+            for (Game game : games) {
+                if (game.getGameid().equals(req.params(":gameid"))) {
                     res.status(HttpStatus.SC_OK);
                     return gson.toJson(game);
                 }

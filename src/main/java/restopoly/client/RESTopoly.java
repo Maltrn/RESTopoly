@@ -8,6 +8,7 @@ import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.client.WebSocketClient;
 import restopoly.resources.*;
 import restopoly.util.PlayerWebSocket;
+import restopoly.util.Ports;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -39,11 +40,11 @@ public class RESTopoly {
 
     public String createGame() throws UnirestException {
         HttpResponse response = Unirest.post(restopoly.util.Ports.GAMESADDRESS)
-                .queryString("gameUri", restopoly.util.Ports.GAMESADDRESS)
-                .queryString("diceUri", restopoly.util.Ports.DICEADDRESS)
-                .queryString("bankUri", restopoly.util.Ports.BANKSADDRESS)
-                .queryString("boardUri", restopoly.util.Ports.BOARDSADDRESS)
-                .queryString("eventUri", restopoly.util.Ports.EVENTSADDRESS)
+                .header(Ports.GAMESADDRESS, restopoly.util.Ports.GAMESADDRESS)
+                .header(Ports.DICE_KEY, restopoly.util.Ports.DICEADDRESS)
+                .header(Ports.BANK_KEY, restopoly.util.Ports.BANKSADDRESS)
+                .header(Ports.BOARD_KEY, restopoly.util.Ports.BOARDSADDRESS)
+                .header(Ports.EVENT_KEY, restopoly.util.Ports.EVENTSADDRESS)
                 .asJson();
         Gson gson = new Gson();
         Game game = gson.fromJson(response.getBody().toString(), Game.class);
