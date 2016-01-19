@@ -1,6 +1,7 @@
 package restopoly.client;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
@@ -36,6 +37,12 @@ public class RESTopoly {
         return INSTANCE;
     }
 
+
+
+
+
+
+
     // METHODS
 
     public String createGame() throws UnirestException {
@@ -49,7 +56,6 @@ public class RESTopoly {
         Gson gson = new Gson();
         Game game = gson.fromJson(response.getBody().toString(), Game.class);
         return game.getGameid();
-
     }
 
     public void joinGame(String gameid, String playerid, String name) throws UnirestException {

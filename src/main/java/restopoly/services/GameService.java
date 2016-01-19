@@ -49,18 +49,19 @@ public class GameService{
         post("/games", (req, res) -> {
             res.header("Content-Type", "application/json");
             // Client from GUI
-//            res.header(Ports.GAME_KEY, req.headers(Ports.GAME_KEY));
-//            res.header(Ports.DICE_KEY, req.headers(Ports.DICE_KEY));
-//            res.header(Ports.BANK_KEY, req.headers(Ports.BANK_KEY));
-//            res.header(Ports.BOARD_KEY, req.headers(Ports.BOARD_KEY));
-//            res.header(Ports.EVENT_KEY, req.headers(Ports.EVENT_KEY));
+            res.header(Ports.GAME_KEY, req.headers(Ports.GAME_KEY));
+            res.header(Ports.DICE_KEY, req.headers(Ports.DICE_KEY));
+            res.header(Ports.BANK_KEY, req.headers(Ports.BANK_KEY));
+            res.header(Ports.BOARD_KEY, req.headers(Ports.BOARD_KEY));
+            res.header(Ports.EVENT_KEY, req.headers(Ports.EVENT_KEY));
+            res.header(Ports.BROOKER_KEY, req.headers(Ports.BROOKER_KEY));
             // Client from PostMan
-            res.header(Ports.GAME_KEY, Ports.GAMESADDRESS);
-            res.header(Ports.DICE_KEY, Ports.DICEADDRESS);
-            res.header(Ports.BANK_KEY, Ports.BANKSADDRESS);
-            res.header(Ports.BOARD_KEY, Ports.BOARDSADDRESS);
-            res.header(Ports.EVENT_KEY, Ports.EVENTSADDRESS);
-
+//            res.header(Ports.GAME_KEY, Ports.GAMESADDRESS);
+//            res.header(Ports.DICE_KEY, Ports.DICEADDRESS);
+//            res.header(Ports.BANK_KEY, Ports.BANKSADDRESS);
+//            res.header(Ports.BOARD_KEY, Ports.BOARDSADDRESS);
+//            res.header(Ports.EVENT_KEY, Ports.EVENTSADDRESS);
+//            res.header(Ports.BROOKER_KEY, Ports.BROKERSADDRESS);
 
 
             Game reqGame = new Gson().fromJson(req.body().toString(), Game.class);
@@ -79,10 +80,9 @@ public class GameService{
                 components.setGame(req.headers(Ports.GAME_KEY));
                 components.setDice(req.headers(Ports.DICE_KEY));
                 components.setBank(req.headers(Ports.BANK_KEY));
-                components.setBoard(req.headers(Ports.BOARD_KEY));
+                components.setBoard(req.headers(Ports.BOARD_KEY)+ "/" + reqGame.getGameid());
                 components.setEvent(req.headers(Ports.EVENT_KEY));
 
-//          TODO - richtige Uri muss noch eingefügt werden
                 reqGame.setUri(Ports.GAMESADDRESS + "/" + reqGame.getGameid());
              //   return gson.toJson(game);
             }
@@ -107,12 +107,12 @@ public class GameService{
 
 //                Unirest.put("http://localhost:8090/boards/" + reqGame.getGameid())
                 Unirest.put(req.headers(Ports.BOARD_KEY)+"/" + reqGame.getGameid())
-                        .header(Ports.GAME_KEY, Ports.GAMESADDRESS)
-                        .header(Ports.DICE_KEY, Ports.DICEADDRESS)
-                        .header(Ports.BANK_KEY, Ports.BANKSADDRESS)
-                        .header(Ports.BOARD_KEY, Ports.BOARDSADDRESS)
-                        .header(Ports.EVENT_KEY, Ports.EVENTSADDRESS)
-                        .header(Ports.BROOKER_KEY, Ports.BROKERSADDRESS)
+                        .header(Ports.GAME_KEY, req.headers(Ports.GAME_KEY))
+                        .header(Ports.DICE_KEY, req.headers(Ports.DICE_KEY))
+                        .header(Ports.BANK_KEY, req.headers(Ports.BANK_KEY))
+                        .header(Ports.BOARD_KEY, req.headers(Ports.BOARD_KEY))
+                        .header(Ports.EVENT_KEY, req.headers(Ports.EVENT_KEY))
+                        .header(Ports.BROOKER_KEY, req.headers(Ports.BROOKER_KEY))
                         .asString();
             return gson.toJson(reqGame);
         });
@@ -121,7 +121,7 @@ public class GameService{
             res.status(HttpStatus.SC_NOT_FOUND);
             res.header("Content-Type", "application/json");
             Gson gson = new GsonBuilder()
-                    .setExclusionStrategies(new CustomExclusionStrategy("restopoly.resources.Game.components"))
+             //       .setExclusionStrategies(new CustomExclusionStrategy("restopoly.resources.Game.components"))
                     .setExclusionStrategies(new CustomExclusionStrategy("restopoly.resources.Game.uri"))
                     .create();
             for (Game game : games) {
@@ -172,6 +172,9 @@ public class GameService{
         });
 
         put("/games/:gameid/players/:playerid", (req, res) -> {
+            res.status(HttpStatus.SC_OK);
+
+
             Player player = new Player(req.params(":playerid"));
             player.setName(req.queryParams("name"));
             player.setPosition(0);

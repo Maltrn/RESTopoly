@@ -39,6 +39,14 @@ public class BoardService {
 
         put("/boards/:gameid", (req, res) -> {
             res.status(HttpStatus.SC_OK);
+            res.header("Content-Type", "application/json");
+            res.header(Ports.GAME_KEY, req.headers(Ports.GAME_KEY));
+            res.header(Ports.DICE_KEY, req.headers(Ports.DICE_KEY));
+            res.header(Ports.BANK_KEY, req.headers(Ports.BANK_KEY));
+            res.header(Ports.BOARD_KEY, req.headers(Ports.BOARD_KEY));
+            res.header(Ports.EVENT_KEY, req.headers(Ports.EVENT_KEY));
+            res.header(Ports.BROOKER_KEY, req.headers(Ports.BROOKER_KEY));
+
             Board board = new Board(req.params(":gameid"));
             String uri_brooker = req.headers(Ports.BROOKER_KEY);
             ArrayList<Field> fields = new ArrayList<>();
@@ -49,15 +57,13 @@ public class BoardService {
 
             board.setFields(fields);
             boards.add(board);
-            System.out.println("BROKER_URI: " + uri_brooker);
-//          TODO - Broker anlegen - später wieder rein
-//            Unirest.put(uri_key + "/" + req.params(":gameid"))
-//                    .header(Ports.GAME_KEY, Ports.GAMESADDRESS)
-//                    .header(Ports.DICE_KEY, Ports.DICEADDRESS)
-//                    .header(Ports.BANK_KEY, Ports.BANKSADDRESS)
-//                    .header(Ports.BOARD_KEY, Ports.BOARDSADDRESS)
-//                    .header(Ports.EVENT_KEY, Ports.EVENTSADDRESS)
-//                    .asString();
+            Unirest.put(uri_brooker + "/" + req.params(":gameid"))
+                    .header(Ports.GAME_KEY, Ports.GAMESADDRESS)
+                    .header(Ports.DICE_KEY, Ports.DICEADDRESS)
+                    .header(Ports.BANK_KEY, Ports.BANKSADDRESS)
+                    .header(Ports.BOARD_KEY, Ports.BOARDSADDRESS)
+                    .header(Ports.EVENT_KEY, Ports.EVENTSADDRESS)
+                    .asString();
             return "";
         });
 
