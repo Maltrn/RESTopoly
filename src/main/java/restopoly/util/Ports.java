@@ -9,6 +9,13 @@ public interface Ports {
     String BOARDSADDRESS = "http://172.18.0.54:4567/boards";
     String BANKSADDRESS = "http://172.18.0.55:4567/banks";
 
+    String BANK_KEY     = "bankURI";
+    String BOARD_KEY    = "boardURI";
+    String DICE_KEY     = "diceURI";
+    String GAME_KEY     = "gameURI";
+    String EVENT_KEY    = "eventURI";
+    String PLAYER_KEY   = "playerURI";
+    String BROOKER_KEY  = "brookerURI";
 
 //    String BANKSADDRESS = "http://172.18.0.54:12012/banks";
     String DICEADDRESS = "http://172.18.0.9:4567/dice";

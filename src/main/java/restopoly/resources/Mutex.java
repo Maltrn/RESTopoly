@@ -101,16 +101,7 @@ public class Mutex {
         return result;
     }
 
-    public boolean releaseMutex(String gameid){
 
-        if (containGameMutex(gameid)){
-            for (InnerMutex elem: mapMutex.get(gameid).values()){
-                if (elem.isMutexBlocked()) elem.setMutex(false);
-            }
-            return true;
-        }
-        return false;
-    }
 
     public void addNextTurnPlayer(String gameId, String playerId){
         if (!isMutexFree(gameId)){
@@ -152,6 +143,16 @@ public class Mutex {
     }
 
 
+    public boolean releaseMutex(String gameid){
+        if (containGameMutex(gameid)){
+            for (InnerMutex elem: mapMutex.get(gameid).values()){
+                if (elem.isMutexBlocked()) elem.setMutex(false);
+            }
+            return true;
+        }
+        return false;
+    }
+
 
     public void removePlayer(String gameId, String playerId){
         if (containGameMutex(gameId)){
@@ -164,11 +165,7 @@ public class Mutex {
         boolean result = false;
         if (containGameMutex(game)){
 
-
-
-
         }
-
         return true;
     }
 

@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
+import org.apache.http.HttpStatus;
 import restopoly.DTO.PlayerBoardDTO;
 import restopoly.DTO.RollDTO;
 import restopoly.resources.Board;
@@ -12,6 +13,7 @@ import restopoly.resources.Field;
 import restopoly.resources.Place;
 import restopoly.resources.Player;
 import restopoly.util.CustomExclusionStrategy;
+import restopoly.util.Ports;
 import restopoly.util.Service;
 
 import java.util.ArrayList;
@@ -30,13 +32,15 @@ public class BoardService {
 //        port(8090);
 
         get("/boards", (req, res) -> {
-            res.status(200);
+            res.status(HttpStatus.SC_OK);
             res.header("Content-Type", "application/json");
             return new Gson().toJson(boards);
         });
 
         put("/boards/:gameid", (req, res) -> {
+            res.status(HttpStatus.SC_OK);
             Board board = new Board(req.params(":gameid"));
+            String uri_brooker = req.headers(Ports.BROOKER_KEY);
             ArrayList<Field> fields = new ArrayList<>();
             fields.add(new Field(new Place("0"), new ArrayList<>()));
             fields.add(new Field(new Place("1"), new ArrayList<>()));
@@ -45,8 +49,15 @@ public class BoardService {
 
             board.setFields(fields);
             boards.add(board);
+            System.out.println("BROKER_URI: " + uri_brooker);
 //          TODO - Broker anlegen - später wieder rein
-//            Unirest.put(BROKERSADDRESS + "/" + req.params(":gameid"));
+//            Unirest.put(uri_key + "/" + req.params(":gameid"))
+//                    .header(Ports.GAME_KEY, Ports.GAMESADDRESS)
+//                    .header(Ports.DICE_KEY, Ports.DICEADDRESS)
+//                    .header(Ports.BANK_KEY, Ports.BANKSADDRESS)
+//                    .header(Ports.BOARD_KEY, Ports.BOARDSADDRESS)
+//                    .header(Ports.EVENT_KEY, Ports.EVENTSADDRESS)
+//                    .asString();
             return "";
         });
 

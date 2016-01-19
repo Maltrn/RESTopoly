@@ -3,6 +3,7 @@ package restopoly.services;
 import com.google.gson.Gson;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
+import org.apache.http.HttpStatus;
 import org.json.JSONObject;
 import restopoly.resources.Broker;
 import restopoly.resources.Event;
@@ -26,7 +27,7 @@ public class BrokerService {
 
 //      places a broker
         put("/brokers/:gameid", (req, res) -> {
-            res.status(200);
+            res.status(HttpStatus.SC_OK);
             res.header("Content-Type", "application/json");
             Broker newBroker = new Broker(req.params(":gameid"));
             brokers.add(newBroker);
@@ -38,13 +39,13 @@ public class BrokerService {
 
 //      Registers the place with the broker, won't change anything if already registered
         put("/brokers/:gameid/places/:placeid", (req, res) -> {
-            res.status(404);
+            res.status(HttpStatus.SC_NOT_FOUND);
             res.header("Content-Type", "application/json");
             for (Broker broker : brokers) {
                 if(broker.getGameid().equals(req.params(":gameid"))){
                     if(broker.containField(req.params(":placeId"))) {
                         broker.putField(req.params(":placeId"));
-                        res.status(200);
+                        res.status(HttpStatus.SC_OK);
 //                      TODO - Von wo kommen die anderen Werte?
                         JSONObject jsonObject = broker.getReturnCode(req.params(":placeId"));
 
@@ -61,7 +62,7 @@ public class BrokerService {
 
 //      indicates, that the player has visited this place, may be resulting in money transfer
         post("/brokers/:gameid/places/:placeid/visit/:playerid", (req, res) -> {
-            res.status(404);
+            res.status(HttpStatus.SC_NOT_FOUND);
             res.header("Content-Type", "application/json");
             String g_id = req.params(":gameid");
             String p_id = req.params(":placeid");
@@ -76,13 +77,12 @@ public class BrokerService {
                         String tPrice = tBroker.getRent(p_id);
                         Unirest.post(BANKSADDRESS + "/" + g_id + "/transfer/from/" + pl_id + "/to/" + ownerID + "/" + tPrice).asJson();
 
-                        res.status(200);
                         Gson gson = new Gson();
                         JSONObject jsonObject = null;
                         jsonObject = new JSONObject();
                         HttpResponse eventRes  = Unirest.get(EVENTSADDRESS + "/event/"+req.params(":gameid")).asJson();
                         Event event = gson.fromJson(eventRes.getBody().toString(), Event.class);
-                        res.status(200);
+                        res.status(HttpStatus.SC_OK);
                         jsonObject.put("events", event);
                         jsonObject.put("player", pl_id);
                         return gson.toJson(jsonObject);
@@ -98,7 +98,7 @@ public class BrokerService {
 
 //      Todo - Buy the place in question. It will fail if it is not for sale
         post("/brokers/:gameid/places/:placeid/owner", (req, res) -> {
-            res.status(409);
+            res.status(HttpStatus.SC_CONFLICT);
             res.header("Content-Type", "application/json");
             String g_id = req.params(":gameid");
             String p_id = req.params(":placeid");
@@ -113,7 +113,7 @@ public class BrokerService {
                         String tPrice = tBroker.getPrice(p_id);
                         String playerID= "";
                         HttpResponse response = Unirest.post(BANKSADDRESS + "/" + g_id + "/transfer/from/" + playerID + "/" + tPrice).asJson();
-                        if(response.getStatus() == 201){
+                        if(response.getStatus() == HttpStatus.SC_CREATED){
                             tBroker.buyField(p_id,playerID);
 
                             Gson gson = new Gson();
@@ -121,7 +121,7 @@ public class BrokerService {
                             jsonObject = new JSONObject();
                             HttpResponse eventRes  = Unirest.get(EVENTSADDRESS + "/event/"+req.params(":gameid")).asJson();
                             Event event = gson.fromJson(eventRes.getBody().toString(), Event.class);
-                            res.status(200);
+                            res.status(HttpStatus.SC_OK);
                             jsonObject.put("events", event);
 //                            TODO - Welcher Player??
                             jsonObject.put("player", playerID);
