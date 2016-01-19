@@ -6,6 +6,8 @@ package restopoly.resources;
 public class Event {
 
     private String gameid;
+    private String eventid;
+    private String uri;
     private String type;
     private String name;
     private String reason;
@@ -24,6 +26,31 @@ public class Event {
         this.reason=reason;
         this.resource=resource;
         this.player=player;
+    }
+
+    public Event(String gameid, String type, String name, String reason, String resource, Player player){
+        this.gameid = gameid;
+        this.type=type;
+        this.name=name;
+        this.reason=reason;
+        this.resource=resource;
+        this.player=player;
+    }
+
+    public String getEventid() {
+        return eventid;
+    }
+
+    public void setEventid(String eventid) {
+        this.eventid = eventid;
+    }
+
+    public String getUri() {
+        return uri;
+    }
+
+    public void setUri(String uri) {
+        this.uri = uri;
     }
 
     public String getGameid() {

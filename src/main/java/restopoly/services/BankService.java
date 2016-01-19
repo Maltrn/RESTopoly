@@ -2,16 +2,19 @@ package restopoly.services;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.HttpResponse;
+import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
+import restopoly.resources.Account;
+import restopoly.resources.Bank;
+import restopoly.resources.Player;
 import restopoly.util.CustomExclusionStrategy;
+import restopoly.util.Ports;
 import restopoly.util.Service;
-import static restopoly.util.Ports.*;
-import restopoly.resources.*;
 
 import java.util.ArrayList;
 
+import static restopoly.util.Ports.BANKSADDRESS;
 import static spark.Spark.*;
 
 /**
@@ -20,6 +23,8 @@ import static spark.Spark.*;
 public class BankService {
 
     public static void main(String[] args) {
+//TODO - später auskommentieren
+        port(4569);
 
         BankService bankService = new BankService();
 
@@ -53,16 +58,24 @@ public class BankService {
             for(Bank b : banks){
                 if(b.getGameid().equals(req.params(":gameid"))) bank=b;
             }
+
+//            TODO - Änderungen vorgenommen, da laut Specs ein Player als Body übergeben wird!
+            Gson gsonTempPlayer = new Gson();
+            Player tempPlayer =  gsonTempPlayer.fromJson(req.body().toString(), Player.class);
+
             Gson gson = new Gson();
-            if(bank.getAccount(req.body())!=null){
+//            if(bank.getAccount(req.body())!=null){
+            if(bank.getAccount(tempPlayer.getId())!=null){
                 res.status(409);
                 return gson.toJson(bank.getAccount(req.body()));
             }
 
-            HttpResponse playerResponse = Unirest.get(GAMESADDRESS+"/"+ req.params(":gameid")+"/players/"+req.body()).asJson();
-            Player player = gson.fromJson(playerResponse.getBody().toString(),Player.class);
+//            HttpResponse playerResponse = Unirest.get(Ports.GAMESADDRESS + "/"+ req.params(":gameid")+"/players/"+req.body()).asJson();
+            HttpResponse playerResponse = Unirest.get(Ports.GAMESADDRESS + "/"+ req.params(":gameid")+"/players/"+tempPlayer.getId()).asJson();
+            Player player = gson.fromJson(playerResponse.getBody().toString(), Player.class);
 
-            Account account = new Account(req.body(),player,0);
+//            Account account = new Account(req.body(),player,0);
+            Account account = new Account(player.getId(),player,0);
             bank.addAccount(account);
             return gson.toJson(account);
         });
@@ -90,7 +103,11 @@ public class BankService {
             return gson.toJson(saldo);
         });
 
-
+//        TODO - einbauen
+//        req.Body() = {"type": "string",
+//                "required": true,
+//                "description": "the reason for the transfer"}
+//        Response = a List of Events
         post("/banks/:gameid/transfer/to/:to/:amount", (req, res) -> {
             synchronized(bankService) {
                 res.status(201);
@@ -116,6 +133,11 @@ public class BankService {
             }
         });
 
+//        TODO - einbauen
+//        req.Body() = {"type": "string",
+//                "required": true,
+//                "description": "the reason for the transfer"}
+//        Response = a List of Events
         post("/banks/:gameid/transfer/from/:from/:amount", (req, res) -> {
             synchronized(bankService) {
                 res.status(201);
@@ -145,7 +167,11 @@ public class BankService {
             }
         });
 
-
+//        TODO - einbauen
+//        req.Body() = {"type": "string",
+//                "required": true,
+//                "description": "the reason for the transfer"}
+//        Response = a List of Events
         post("/banks/:gameid/transfer/from/:from/to/:to/:amount", (req, res) -> {
             synchronized(bankService) {
                 res.status(201);
