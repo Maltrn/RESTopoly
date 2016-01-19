@@ -6,7 +6,6 @@ import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import restopoly.resources.Event;
 import restopoly.resources.Subscription;
-import restopoly.util.CustomExclusionStrategy;
 import restopoly.util.Service;
 
 import java.util.ArrayList;
@@ -59,7 +58,7 @@ public class EventService {
             event.setGameid(req.queryParams("gameid"));
             event.setUri("events/" + String.valueOf(eventCounter));
             eventCounter+=1;
-            System.out.println("uri: " + event.getUri());
+//            System.out.println("uri: " + event.getUri());
             events.add(event);
             for(Subscription subscription:subscriptions){
                 if(subscription.getEvent().getName().equals(event.getName()) &&
@@ -67,12 +66,12 @@ public class EventService {
                     Unirest.post(PLAYERSADDRESS+"/event").queryString("playerUri",subscription.getUri()).body(gson.toJson(event)).asString();
                 }
             }
-            gson = new GsonBuilder()
-                    .setExclusionStrategies(new CustomExclusionStrategy("restopoly.resources.Event.name"))
-//                    .setExclusionStrategies(new CustomExclusionStrategy("restopoly.resources.Event.reason"))
-                    .setExclusionStrategies(new CustomExclusionStrategy("restopoly.resources.Event.player"))
-                    .create();
-            return gson.toJson(event);
+//            gson = new GsonBuilder()
+//                    .setExclusionStrategies(new CustomExclusionStrategy("restopoly.resources.Event.name"))
+////                    .setExclusionStrategies(new CustomExclusionStrategy("restopoly.resources.Event.reason"))
+//                    .setExclusionStrategies(new CustomExclusionStrategy("restopoly.resources.Event.player"))
+//                    .create();
+            return gson.toJson(event.getUri());
         });
 
         delete("/events", (req, res) -> {
