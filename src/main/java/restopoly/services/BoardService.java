@@ -200,7 +200,7 @@ public class BoardService {
 
             Gson gsonMutex = new Gson();
 //            HttpResponse playerResponse  = Unirest.get(GAMESADDRESS + "/" + req.params(":gameid") + "/players/turn").asJson();
-            HttpResponse playerResponse  = Unirest.get(GAMESADDRESS + "/games/" + req.params(":gameid") + "/players/turn").asJson();
+            HttpResponse playerResponse  = Unirest.get(GAMESADDRESS + "/" + req.params(":gameid") + "/players/turn").asJson();
 
             Player mutexPlayer = gsonMutex.fromJson(playerResponse.getBody().toString(), Player.class);
 
