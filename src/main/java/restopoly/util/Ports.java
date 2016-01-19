@@ -5,9 +5,12 @@ package restopoly.util;
  */
 public interface Ports {
 
-    String GAMESADDRESS = "http://172.18.0.53:4567/games";
-    String BOARDSADDRESS = "http://172.18.0.54:4567/boards";
-    String BANKSADDRESS = "http://172.18.0.55:4567/banks";
+//    String GAMESADDRESS = "http://172.18.0.53:4567/games";
+    String GAMESADDRESS = "http://localhost:4567/games";
+//    String BOARDSADDRESS = "http://172.18.0.54:4567/boards";
+    String BOARDSADDRESS = "http://localhost:4568/boards";
+//    String BANKSADDRESS = "http://172.18.0.55:4567/banks";
+    String BANKSADDRESS = "http://localhost:4569/banks";
 
     String BANK_KEY     = "bankURI";
     String BOARD_KEY    = "boardURI";

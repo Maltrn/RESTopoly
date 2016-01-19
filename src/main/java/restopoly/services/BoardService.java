@@ -28,8 +28,8 @@ public class BoardService {
     private static ArrayList<Board> boards = new ArrayList<>();
 
     public static void main(String[] args) {
-
-//        port(8090);
+//TODO - später auskommentieren
+        port(4568);
 
         get("/boards", (req, res) -> {
             res.status(HttpStatus.SC_OK);

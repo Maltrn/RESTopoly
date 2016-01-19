@@ -26,6 +26,9 @@ public class GameService{
 
     public static void main(String[] args) {
 
+//TODO - später auskommentieren
+        port(4567);
+
         Mutex mutex = new Mutex();
 
 
@@ -107,8 +110,8 @@ public class GameService{
             games.add(reqGame);
             mutex.addGame(reqGame.getGameid());
 //            Unirest.put("http://localhost:8090/boards/"+reqGame.getGameid()).asString();
-//            Unirest.put(restopoly.util.Ports.BANKSADDRESS + "/"+reqGame.getGameid()).asString();
-//            Unirest.put(restopoly.util.Ports.BOARDSADDRESS + "/"+reqGame.getGameid()).asString();
+            Unirest.put(restopoly.util.Ports.BANKSADDRESS + "/"+reqGame.getGameid()).asString();
+            Unirest.put(restopoly.util.Ports.BOARDSADDRESS + "/"+reqGame.getGameid()).asString();
             return gson.toJson(reqGame);
         });
 
@@ -199,7 +202,6 @@ public class GameService{
             return "";
         });
 
-//      TODO - Mutex berücksichtigen?
         put("/games/:gameid/players/:playerid/ready", (req, res) -> {
             Game game = null;
             for (Game g : games) {
@@ -249,9 +251,6 @@ public class GameService{
             return "";
         });
 
-//      gets the player holding the turn mutex
-//      res 200 - { id:mario, name:"Mario", uri:"http://localhost:4567/player/mario", ready:false }
-//      res 404
         get("/games/:gameid/players/turn", (req, res) -> {
             System.out.println("Player with Mutex: " + mutex.playerWithMutex(req.params(":gameid")));
             res.status(HttpStatus.SC_BAD_REQUEST);
@@ -265,10 +264,6 @@ public class GameService{
             }
             return "";
         });
-
-//      responses: 200 - already holding the mutex,
-//      201 - aquired the mutex,
-//      409 - already aquired by an other player
 
         put("/games/:gameid/players/:playerid/turn", (req, res) -> {
 //          TODO - Player wird als RequestBody übergeben - weitere Verwendung?
@@ -286,16 +281,6 @@ public class GameService{
                 System.out.println("ismMutexFree");
                 res.status(HttpStatus.SC_CREATED);
                 mutex.changeMutexToPlayer(gameid, playerid);
-            }
-            return "";
-        });
-
-//      releases the mutex
-//      res - keine
-        delete("/games/:gameid/players/turn", (req, res) -> {
-            String gameid = req.params(":gameid");
-            if(getGame(gameid) != null){
-                mutex.addTurn(gameid, mutex.playerWithMutex(gameid));
             }
             return "";
         });
