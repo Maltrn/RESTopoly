@@ -8,17 +8,15 @@ import com.mashape.unirest.http.exceptions.UnirestException;
 import org.apache.http.HttpStatus;
 import restopoly.DTO.PlayerBoardDTO;
 import restopoly.DTO.RollDTO;
-import restopoly.resources.Board;
-import restopoly.resources.Field;
-import restopoly.resources.Place;
-import restopoly.resources.Player;
+import restopoly.resources.*;
 import restopoly.util.CustomExclusionStrategy;
 import restopoly.util.Ports;
 import restopoly.util.Service;
 
 import java.util.ArrayList;
 
-import static restopoly.util.Ports.*;
+import static restopoly.util.Ports.BOARDSADDRESS;
+import static restopoly.util.Ports.GAMESADDRESS;
 import static spark.Spark.*;
 
 /**
@@ -56,22 +54,26 @@ public class BoardService {
             fields.add(new Field(new Place("3"), new ArrayList<>()));
 
             board.setFields(fields);
+            for(Board b: boards){
+                if(b.getGameid()==req.params(":gameid")){
+                    return "";
+                }
+            }
             boards.add(board);
 
-            Unirest.put(Ports.BROKERSADDRESS + "/" + req.params(":gameid"));
-
-            for(Field field : fields){
-                Unirest.put(Ports.BROKERSADDRESS + "/" + req.params(":gameid") + "/places/" + field.getPlace().getName());
-            }
-
-
-            Unirest.put(uri_brooker + "/" + req.params(":gameid"))
+//            Unirest.put(uri_brooker + "/" + req.params(":gameid"))
+            Unirest.put(Ports.BROKERSADDRESS + "/" + req.params(":gameid"))
                     .header(Ports.GAME_KEY, Ports.GAMESADDRESS)
                     .header(Ports.DICE_KEY, Ports.DICEADDRESS)
                     .header(Ports.BANK_KEY, Ports.BANKSADDRESS)
                     .header(Ports.BOARD_KEY, Ports.BOARDSADDRESS)
                     .header(Ports.EVENT_KEY, Ports.EVENTSADDRESS)
                     .asString();
+
+            for(Field field : fields){
+                Estate tempEstate = new Estate(Ports.BOARDSADDRESS+"/fields/places/"+field.getPlace().getName(), "", "2000", "500", "1000", "0", "", "");
+                Unirest.put(Ports.BROKERSADDRESS + "/" + req.params(":gameid") + "/places/" + field.getPlace().getName()).body(new Gson().toJson(tempEstate)).asString();
+            }
             return "";
         });
 
@@ -104,7 +106,6 @@ public class BoardService {
             for(Board b : boards){
                 if(b.getGameid().equals(req.params(":gameid")))
                    boards.remove(b);
-//                TODO - Spiel muss unmittelbar beendet werden
             }
             return "";
         });
@@ -191,16 +192,6 @@ public class BoardService {
             return "";
         });
 
-
-//      gives a throw of dice from the player to the board - Returns the new board state and possible options to take
-//      response: { player: "/boards/42/players/mario",
-//            board: { "fields":[{"place": "/boards/42/places/0" ,"players":[]},
-//            {"place": "/boards/42/places/1" ,"players":["/boards/42/players/mario"]},
-//            {"place": "/boards/42/places/2" ,"players":[]},
-//            {"place": "/boards/42/places/3" ,"players":[]},
-//            {"place": "/boards/42/places/4","players":[]} ] },
-//            events: [ { action: "transfer", uri: "/banks/42/transfer/12345",
-//            name:"Bank Transfer", reason:"Rent for Badstrasse" } ] }
 
 // ------------------------------- Aufgabe 2.2 A ; 1 --------------------------------------------------------
         post("/boards/:gameid/players/:playerid/roll", (req, res) -> {

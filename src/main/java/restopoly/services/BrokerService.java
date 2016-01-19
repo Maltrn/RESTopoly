@@ -144,6 +144,7 @@ public class BrokerService {
                 if (broker.getGameid().equals(req.params(":gameid"))) {
                     res.status(HttpStatus.SC_OK);
                     Gson gson = new Gson();
+                    System.out.println("getEstates");
                     return gson.toJson(broker.getEstates());
                 }
             }

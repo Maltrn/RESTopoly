@@ -9,7 +9,6 @@ import restopoly.resources.Account;
 import restopoly.resources.Bank;
 import restopoly.resources.Event;
 import restopoly.resources.Player;
-import restopoly.util.CustomExclusionStrategy;
 import restopoly.util.Ports;
 import restopoly.util.Service;
 
@@ -122,12 +121,15 @@ public class BankService {
                 try {
                     to.setSaldo(saldo + Integer.parseInt(req.params(":amount")));
 
-                    Gson gson = new GsonBuilder()
-                            .setExclusionStrategies(new CustomExclusionStrategy("restopoly.resources.Account.player"))
-                            .create();
+//                    Gson gson = new GsonBuilder()
+//                            .setExclusionStrategies(new CustomExclusionStrategy("restopoly.resources.Account.player"))
+//                            .create();
                     Event event = new Event("type","transfer to amount","resource","reason",to.getPlayer());
                     Unirest.post(restopoly.util.Ports.EVENTSADDRESS).queryString("gameid", req.params(":gameid")).body(new Gson().toJson(event)).asString();
-                    return gson.toJson(to);
+                    HttpResponse tempEvents = Unirest.get(restopoly.util.Ports.EVENTSADDRESS).asString();
+                    Gson gsonEvents = new Gson();
+                    Event[] resultEvents = gsonEvents.fromJson(tempEvents.getBody().toString(), Event[].class);
+                    return gsonEvents.toJson(resultEvents);
                 } catch (Throwable e) {
                     to.setSaldo(saldo);
                     res.status(500);
@@ -158,12 +160,15 @@ public class BankService {
                 try {
                     from.setSaldo(saldo - Integer.parseInt(req.params(":amount")));
 
-                    Gson gson = new GsonBuilder()
-                            .setExclusionStrategies(new CustomExclusionStrategy("restopoly.resources.Account.player"))
-                            .create();
+//                    Gson gson = new GsonBuilder()
+//                            .setExclusionStrategies(new CustomExclusionStrategy("restopoly.resources.Account.player"))
+//                            .create();
                     Event event = new Event("type","transfer from amount","resource","reason",from.getPlayer());
                     Unirest.post(restopoly.util.Ports.EVENTSADDRESS).queryString("gameid", req.params(":gameid")).body(new Gson().toJson(event)).asString();
-                    return gson.toJson(from);
+                    HttpResponse tempEvents = Unirest.get(restopoly.util.Ports.EVENTSADDRESS).asString();
+                    Gson gsonEvents = new Gson();
+                    Event[] resultEvents = gsonEvents.fromJson(tempEvents.getBody().toString(), Event[].class);
+                    return gsonEvents.toJson(resultEvents);
                 } catch (Throwable e) {
                     from.setSaldo(saldo);
                     res.status(500);
@@ -200,7 +205,11 @@ public class BankService {
                     to.setSaldo(tosaldo + Integer.parseInt(req.params(":amount")));
                     Event event = new Event("type","transfer from to amount","resource","reason",to.getPlayer());
                     Unirest.post(restopoly.util.Ports.EVENTSADDRESS).queryString("gameid", req.params(":gameid")).body(new Gson().toJson(event)).asString();
-                    return "";
+                    HttpResponse tempEvents = Unirest.get(restopoly.util.Ports.EVENTSADDRESS).asString();
+                    Gson gsonEvents = new Gson();
+                    Event[] resultEvents = gsonEvents.fromJson(tempEvents.getBody().toString(), Event[].class);
+                    return gsonEvents.toJson(resultEvents);
+//                    return "";
                 } catch (Throwable e) {
                     from.setSaldo(fromsaldo);
                     to.setSaldo(tosaldo);

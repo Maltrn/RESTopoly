@@ -31,7 +31,6 @@ public class GameService{
 
         Mutex mutex = new Mutex();
 
-
         get("/games", (req, res) -> {
             res.status(HttpStatus.SC_OK);
             res.header("Content-Type", "application/json");
@@ -86,27 +85,24 @@ public class GameService{
                 reqGame.setUri(Ports.GAMESADDRESS + "/" + reqGame.getGameid());
              //   return gson.toJson(game);
             }
+            for(Game g: games){
+                if(g.getGameid()==reqGame.getGameid()){
+                    return "";
+                }
+            }
             games.add(reqGame);
             mutex.addGame(reqGame.getGameid());
             //ToDo Muss wieder rein
-//                Unirest.put(restopoly.util.Ports.BANKSADDRESS + "/"+reqGame.getGameid())
-//                    .header(Ports.GAME_KEY, Ports.GAMESADDRESS)
-//                    .header(Ports.DICE_KEY, Ports.DICEADDRESS)
-//                    .header(Ports.BANK_KEY, Ports.BANKSADDRESS)
-//                    .header(Ports.BOARD_KEY, Ports.BOARDSADDRESS)
-//                    .header(Ports.EVENT_KEY, Ports.EVENTSADDRESS)
-//                    .asString();
-//
-//                Unirest.put(restopoly.util.Ports.BOARDSADDRESS + "/"+reqGame.getGameid())
-//                    .header(Ports.GAME_KEY, Ports.GAMESADDRESS)
-//                    .header(Ports.DICE_KEY, Ports.DICEADDRESS)
-//                    .header(Ports.BANK_KEY, Ports.BANKSADDRESS)
-//                    .header(Ports.BOARD_KEY, Ports.BOARDSADDRESS)
-//                    .header(Ports.EVENT_KEY, Ports.EVENTSADDRESS)
-//                    .asString();
+                Unirest.put(restopoly.util.Ports.BANKSADDRESS + "/"+reqGame.getGameid())
+                    .header(Ports.GAME_KEY, Ports.GAMESADDRESS)
+                    .header(Ports.DICE_KEY, Ports.DICEADDRESS)
+                    .header(Ports.BANK_KEY, Ports.BANKSADDRESS)
+                    .header(Ports.BOARD_KEY, Ports.BOARDSADDRESS)
+                    .header(Ports.EVENT_KEY, Ports.EVENTSADDRESS)
+                    .asString();
 
-//                Unirest.put("http://localhost:8090/boards/" + reqGame.getGameid())
-                Unirest.put(req.headers(Ports.BOARD_KEY)+"/" + reqGame.getGameid())
+                Unirest.put(Ports.BOARDSADDRESS + "/" + reqGame.getGameid())
+//                Unirest.put(req.headers(Ports.BOARD_KEY)+"/" + reqGame.getGameid())
                         .header(Ports.GAME_KEY, req.headers(Ports.GAME_KEY))
                         .header(Ports.DICE_KEY, req.headers(Ports.DICE_KEY))
                         .header(Ports.BANK_KEY, req.headers(Ports.BANK_KEY))
