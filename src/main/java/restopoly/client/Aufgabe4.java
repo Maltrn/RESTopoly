@@ -65,7 +65,7 @@ public class Aufgabe4 {
                     .header(Ports.GAMESADDRESS, restopoly.util.Ports.GAMESADDRESS + "/" + id)
                     .header(Ports.DICE_KEY, restopoly.util.Ports.DICEADDRESS + "/" + id)
                     .header(Ports.BANK_KEY, restopoly.util.Ports.BANKSADDRESS + "/" + id)
-                    .header(Ports.BOARD_KEY, restopoly.util.Ports.BOARDSADDRESS + "/" + id)
+                    .header(Ports.BOARD_KEY, restopoly.util.Ports.BOARDSADDRESS + "/" + id+ "/players/Nick")
                     .header(Ports.EVENT_KEY, restopoly.util.Ports.EVENTSADDRESS + "/" + id)
                     .asJson();
 
@@ -73,15 +73,15 @@ public class Aufgabe4 {
                     .header(Ports.GAMESADDRESS, restopoly.util.Ports.GAMESADDRESS + "/" + id)
                     .header(Ports.DICE_KEY, restopoly.util.Ports.DICEADDRESS + "/" + id)
                     .header(Ports.BANK_KEY, restopoly.util.Ports.BANKSADDRESS + "/" + id)
-                    .header(Ports.BOARD_KEY, restopoly.util.Ports.BOARDSADDRESS + "/" + id)
+                    .header(Ports.BOARD_KEY, restopoly.util.Ports.BOARDSADDRESS + "/" + id +"/players/Seb")
                     .header(Ports.EVENT_KEY, restopoly.util.Ports.EVENTSADDRESS + "/" + id)
                     .asJson();
 
             Unirest.put(Ports.GAMESADDRESS +"/"+id +"/players/Joe")
                     .header(Ports.GAMESADDRESS, restopoly.util.Ports.GAMESADDRESS + "/" + id)
-                    .header(Ports.DICE_KEY, restopoly.util.Ports.DICEADDRESS + "/" + id)
-                    .header(Ports.BANK_KEY, restopoly.util.Ports.BANKSADDRESS + "/" + id)
-                    .header(Ports.BOARD_KEY, restopoly.util.Ports.BOARDSADDRESS + "/" + id)
+                    .header(Ports.DICE_KEY, restopoly.util.Ports.DICEADDRESS + "/" + id )
+                    .header(Ports.BANK_KEY, restopoly.util.Ports.BANKSADDRESS + "/" + id )
+                    .header(Ports.BOARD_KEY, restopoly.util.Ports.BOARDSADDRESS + "/" + id +"/players/Joe")
                     .header(Ports.EVENT_KEY, restopoly.util.Ports.EVENTSADDRESS + "/" + id)
                     .asJson();
 
