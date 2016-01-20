@@ -150,7 +150,7 @@ public class BoardService {
             res.header(Ports.BOARD_KEY, req.headers(Ports.BOARD_KEY));
             res.header(Ports.EVENT_KEY, req.headers(Ports.EVENT_KEY));
             res.header(Ports.BROOKER_KEY, req.headers(Ports.BROOKER_KEY));
-            res.header("player_on_board_roll",req.headers("player_on_board"+req.params(":playerid"))+"/roll");
+            res.header(Ports.KEY_PLAYER_ON_BOARD_ROLL,req.headers(Ports.KEY_BOARDS_PLAYER)+ req.params(":playerid") +"/roll");
             for(Board b : boards){
                 if(b.getGameid().equals(req.params(":gameid")))
                     for(Field f :b.getFields()){

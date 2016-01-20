@@ -112,23 +112,22 @@ public class Aufgabe4 {
     }
 
     public String aufgabe_4_3() throws UnirestException {
-        HttpResponse req_nick = aufgabe_4_2();
+        HttpResponse req_a4_2 = aufgabe_4_2();
 
-        System.out.println("Nick: " + req_nick.getHeaders());
+        System.out.println("Nick: " + req_a4_2.getHeaders().getFirst(Ports.KEY_PLAYER_TURN));
 
-        System.out.println(req_nick.getHeaders().getFirst(Ports.KEY_PLAYER_TURN));
-        HttpResponse uResponse = Unirest.put(req_nick.getHeaders().getFirst(Ports.KEY_PLAYER_TURN))
-                .header(Ports.GAME_KEY, req_nick.getHeaders().getFirst(Ports.GAME_KEY))
-                .header(Ports.DICE_KEY, req_nick.getHeaders().getFirst(Ports.DICE_KEY))
-                .header(Ports.BANK_KEY, req_nick.getHeaders().getFirst(Ports.BANK_KEY))
-                .header(Ports.BOARD_KEY, req_nick.getHeaders().getFirst(Ports.BOARD_KEY))
-                .header(Ports.EVENT_KEY, req_nick.getHeaders().getFirst(Ports.EVENT_KEY))
+        System.out.println(req_a4_2.getHeaders().getFirst(Ports.KEY_PLAYER_TURN));
+        HttpResponse uResponse = Unirest.put(req_a4_2.getHeaders().getFirst(Ports.KEY_PLAYER_TURN))
+                .header(Ports.GAME_KEY, req_a4_2.getHeaders().getFirst(Ports.GAME_KEY))
+                .header(Ports.DICE_KEY, req_a4_2.getHeaders().getFirst(Ports.DICE_KEY))
+                .header(Ports.BANK_KEY, req_a4_2.getHeaders().getFirst(Ports.BANK_KEY))
+                .header(Ports.BOARD_KEY, req_a4_2.getHeaders().getFirst(Ports.BOARD_KEY))
+                .header(Ports.EVENT_KEY, req_a4_2.getHeaders().getFirst(Ports.EVENT_KEY))
+                .header(Ports.KEY_BOARDS_PLAYER, req_a4_2.getHeaders().getFirst(Ports.KEY_BOARDS_PLAYER))
                 .asString();
 
 
-
-
-        System.out.println("PLAYER ON BOARD:" + uResponse.getHeaders());
+        System.out.println("PLAYER ON BOARD:" + uResponse.getHeaders().getFirst(Ports.KEY_BOARDS_PLAYER));
 
         HttpResponse rResponse = Unirest.get(uResponse.getHeaders().getFirst(Ports.KEY_ONBOARD))
                 .header(Ports.GAME_KEY, uResponse.getHeaders().getFirst(Ports.GAME_KEY))
@@ -137,7 +136,11 @@ public class Aufgabe4 {
                 .header(Ports.BOARD_KEY, uResponse.getHeaders().getFirst(Ports.BOARD_KEY))
                 .header(Ports.EVENT_KEY, uResponse.getHeaders().getFirst(Ports.EVENT_KEY))
                 .asJson();
-    System.out.println(rResponse.getBody().toString());
+
+        System.out.println(rResponse.getHeaders().getFirst(Ports.KEY_PLAYER_ON_BOARD_ROLL));
+
+        //HttpResponse postRespone = Unirest.post()
+
     return "";
     }
 
