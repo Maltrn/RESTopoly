@@ -49,10 +49,10 @@ public class BoardService {
             Board board = new Board(req.params(":gameid"));
             String uri_brooker = req.headers(Ports.BROOKER_KEY);
             ArrayList<Field> fields = new ArrayList<>();
-            fields.add(new Field(new Place(Ports.BOARDSADDRESS+req.params(":gameid")+"/places/0"), new ArrayList<>()));
-            fields.add(new Field(new Place(Ports.BOARDSADDRESS+req.params(":gameid")+"/places/1"), new ArrayList<>()));
-            fields.add(new Field(new Place(Ports.BOARDSADDRESS+req.params(":gameid")+"/places/2"), new ArrayList<>()));
-            fields.add(new Field(new Place(Ports.BOARDSADDRESS+req.params(":gameid")+"/places/3"), new ArrayList<>()));
+            fields.add(new Field(new Place(Ports.BOARDSADDRESS+"/"+req.params(":gameid")+"/places/0"), new ArrayList<>()));
+            fields.add(new Field(new Place(Ports.BOARDSADDRESS+"/"+req.params(":gameid")+"/places/1"), new ArrayList<>()));
+            fields.add(new Field(new Place(Ports.BOARDSADDRESS+"/"+req.params(":gameid")+"/places/2"), new ArrayList<>()));
+            fields.add(new Field(new Place(Ports.BOARDSADDRESS+"/"+req.params(":gameid")+"/places/3"), new ArrayList<>()));
 
             board.setFields(fields);
             for(Board b: boards){
@@ -254,7 +254,7 @@ public class BoardService {
 
                     p.setPosition(p.getPosition()+(roll1+roll2)%b.getFields().size());
                     p.setPlace(b.getField(p.getPosition()).getPlace());
-                    res.header("board_player_place",p.getPlace().getName());
+                    res.header(Ports.KEY_BOARD_PLAYER_PLACE,p.getPlace().getName());
                     Event event = new Event("type", "Player throwed " + (roll1 + roll2),"resource", "reason", p);
                     Unirest.post(restopoly.util.Ports.EVENTSADDRESS).queryString("gameid", req.params(":gameid")).body(new Gson().toJson(event)).asString();
 

@@ -20,6 +20,7 @@ public interface Ports {
     String KEY_ONBOARD = "onBoard";
     String KEY_ONBANK = "onBank";
     String KEY_PLAYER_ON_BOARD_ROLL = "player_on_board_roll";
+    String KEY_BOARD_PLAYER_PLACE = "board_player_place";
 
     //    String GAMESADDRESS = "http://172.18.0.53:4567/games";
     String GAMESADDRESS = "http://localhost:4567/games";
