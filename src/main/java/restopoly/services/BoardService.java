@@ -16,6 +16,7 @@ import restopoly.util.Service;
 import java.util.ArrayList;
 
 import static restopoly.util.Ports.BOARDSADDRESS;
+import static restopoly.util.Ports.BOARD_KEY;
 import static restopoly.util.Ports.GAMESADDRESS;
 import static spark.Spark.*;
 
@@ -48,10 +49,10 @@ public class BoardService {
             Board board = new Board(req.params(":gameid"));
             String uri_brooker = req.headers(Ports.BROOKER_KEY);
             ArrayList<Field> fields = new ArrayList<>();
-            fields.add(new Field(new Place("0"), new ArrayList<>()));
-            fields.add(new Field(new Place("1"), new ArrayList<>()));
-            fields.add(new Field(new Place("2"), new ArrayList<>()));
-            fields.add(new Field(new Place("3"), new ArrayList<>()));
+            fields.add(new Field(new Place(Ports.BOARDSADDRESS+req.params(":gameid")+"/places/0"), new ArrayList<>()));
+            fields.add(new Field(new Place(Ports.BOARDSADDRESS+req.params(":gameid")+"/places/1"), new ArrayList<>()));
+            fields.add(new Field(new Place(Ports.BOARDSADDRESS+req.params(":gameid")+"/places/2"), new ArrayList<>()));
+            fields.add(new Field(new Place(Ports.BOARDSADDRESS+req.params(":gameid")+"/places/3"), new ArrayList<>()));
 
             board.setFields(fields);
             for(Board b: boards){
