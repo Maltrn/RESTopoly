@@ -16,6 +16,7 @@ import restopoly.util.CustomExclusionStrategy;
 import restopoly.util.Ports;
 import restopoly.util.Service;
 
+import javax.sound.sampled.Port;
 import java.util.ArrayList;
 
 import static spark.Spark.*;
@@ -178,13 +179,14 @@ public class GameService{
             res.header(Ports.EVENT_KEY, req.headers(Ports.EVENT_KEY));
             res.header(Ports.BROOKER_KEY, req.headers(Ports.BROOKER_KEY));
             res.header(Ports.KEY_PLAYER_GAME_READY, req.headers(Ports.KEY_GAME_PLAYER)+"/ready");
-            res.header(Ports.KEY_PLAYER_TURN, req.headers(Ports.KEY_GAME_PLAYER)+"/turn");
+            res.header(Ports.KEY_BOARDS_PLAYER, req.headers(Ports.KEY_BOARDS_PLAYER));
+            res.header(Ports.KEY_GAME_PLAYER, req.headers(Ports.KEY_GAME_PLAYER));
 
             Player player = new Player(req.params(":playerid"));
             player.setName(req.queryParams("name"));
             player.setPosition(0);
 //            Unirest.put(restopoly.util.Ports.BOARDSADDRESS + "/" + req.params(":gameid") + "/players/" + req.params(":playerid")).body(new Gson().toJson(player)).asString();
-            Unirest.put(req.headers(Ports.BOARD_KEY)).body(new Gson().toJson(player)).asString();
+            Unirest.put(req.headers(Ports.KEY_BOARDS_PLAYER)).body(new Gson().toJson(player)).asString();
             Game game = null;
             for (Game g : games) {
                 if (g.getGameid().equals(req.params(":gameid"))) game = g;
@@ -214,6 +216,16 @@ public class GameService{
         });
 
         put("/games/:gameid/players/:playerid/ready", (req, res) -> {
+            res.header(Ports.GAME_KEY, req.headers(Ports.GAME_KEY));
+            res.header(Ports.DICE_KEY, req.headers(Ports.DICE_KEY));
+            res.header(Ports.BANK_KEY, req.headers(Ports.BANK_KEY));
+            res.header(Ports.BOARD_KEY, req.headers(Ports.BOARD_KEY));
+            res.header(Ports.EVENT_KEY, req.headers(Ports.EVENT_KEY));
+            res.header(Ports.BROOKER_KEY, req.headers(Ports.BROOKER_KEY));
+            res.header(Ports.KEY_PLAYER_TURN, req.headers(Ports.KEY_GAME_PLAYER)+"/turn");
+
+
+
             Game game = null;
             for (Game g : games) {
                 if (g.getGameid().equals(req.params(":gameid"))) {
@@ -239,6 +251,17 @@ public class GameService{
         });
 
         get("/games/:gameid/players/:playerid/ready", (req, res) -> {
+            res.status(HttpStatus.SC_OK);
+            res.header("Content-Type", "application/json");
+            res.header(Ports.GAME_KEY, req.headers(Ports.GAME_KEY));
+            res.header(Ports.DICE_KEY, req.headers(Ports.DICE_KEY));
+            res.header(Ports.BANK_KEY, req.headers(Ports.BANK_KEY));
+            res.header(Ports.BOARD_KEY, req.headers(Ports.BOARD_KEY));
+            res.header(Ports.EVENT_KEY, req.headers(Ports.EVENT_KEY));
+            res.header(Ports.BROOKER_KEY, req.headers(Ports.BROOKER_KEY));
+            res.header(Ports.KEY_GAME_PLAYER, req.headers(Ports.KEY_GAME_PLAYER));
+            res.header(Ports.KEY_PLAYER_TURN, req.headers(Ports.KEY_GAME_PLAYER)+"/turn");
+
             Game game = null;
             for(Game g : games){
                 if(g.getGameid().equals(req.params(":gameid"))){
