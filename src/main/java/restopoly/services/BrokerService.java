@@ -158,12 +158,23 @@ public class BrokerService {
             res.status(404);
             res.header("Content-Type", "application/json");
 
+            res.header(Ports.GAME_KEY, req.headers(Ports.GAME_KEY));
+            res.header(Ports.DICE_KEY, req.headers(Ports.DICE_KEY));
+            res.header(Ports.BANK_KEY, req.headers(Ports.BANK_KEY));
+            res.header(Ports.BOARD_KEY, req.headers(Ports.BOARD_KEY));
+            res.header(Ports.EVENT_KEY, req.headers(Ports.EVENT_KEY));
+            res.header(Ports.BROOKER_KEY, req.headers(Ports.BROOKER_KEY));
+
             Gson gson = new Gson();
             Broker broker = getBroker(req.params(":gameid"));
             if (broker != null) {
                 for(Estate estate : broker.getEstates()){
-                    if (estate.getPlace().equals(req.params(":placeid"))){
+                    System.out.println("Estate " + estate.getPlace());
+                    System.out.println("Estate2 " + req.params(":placeid"));
+                    System.out.println("Adresse " +Ports.BOARDSADDRESS + "/fields/places/" + req.params(":placeid"));
+                    if (estate.getPlace().equals(Ports.BOARDSADDRESS + "/fields/places/" + req.params(":placeid"))){
                         res.status(200);
+                        res.header(Ports.KEY_BROKER_PLACE_OWNER, req.headers(Ports.KEY_BROKER_PLACE)+ "/owner");
                         return gson.toJson(estate);
                     }
                 }

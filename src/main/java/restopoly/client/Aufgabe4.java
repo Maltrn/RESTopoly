@@ -1,16 +1,12 @@
 package restopoly.client;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonArray;
 import com.mashape.unirest.http.HttpResponse;
-import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import restopoly.resources.Game;
-import restopoly.resources.Player;
+import restopoly.resources.Throw;
 import restopoly.util.Ports;
-
-import javax.sound.midi.Soundbank;
 
 /**
  * Created by mizus on 19.01.16.
@@ -67,6 +63,7 @@ public class Aufgabe4 implements Ports {
                 .header(Ports.BANK_KEY, restopoly.util.Ports.BANKSADDRESS)
                 .header(Ports.BOARD_KEY, restopoly.util.Ports.BOARDSADDRESS)
                 .header(Ports.EVENT_KEY, restopoly.util.Ports.EVENTSADDRESS)
+                .header(Ports.BROOKER_KEY, Ports.BROKERSADDRESS)
                 .asJson();
 
         System.out.println("==> " + tResponse.getHeaders().getFirst(Ports.GAME_KEY));
@@ -130,7 +127,7 @@ public class Aufgabe4 implements Ports {
                 .asString();
 
 
-        System.out.println("PLAYER ON BOARD:" + uResponse.getHeaders().getFirst(Ports.KEY_ONBOARD));
+        System.out.println("PLAYER ON BOARD:" + uResponse.getHeaders().getFirst(Ports.KEY_BOARDS_PLAYER));
 
         HttpResponse rResponse = Unirest.get(uResponse.getHeaders().getFirst(Ports.KEY_ONBOARD))
                 .header(Ports.GAME_KEY, uResponse.getHeaders().getFirst(Ports.GAME_KEY))
@@ -142,9 +139,11 @@ public class Aufgabe4 implements Ports {
                 .header(KEY_PLAYER_TURN, uResponse.getHeaders().getFirst(KEY_PLAYER_TURN))
                 .asJson();
 
-        System.out.println("Roll" + rResponse.getHeaders().getFirst(Ports.KEY_PLAYER_ON_BOARD_ROLL));
-        System.out.println("Turn" + rResponse.getHeaders().getFirst(KEY_PLAYER_TURN));
+        System.out.println("Roll: " + rResponse.getHeaders().getFirst(Ports.KEY_PLAYER_ON_BOARD_ROLL));
+        System.out.println("Turn: " + rResponse.getHeaders().getFirst(KEY_PLAYER_TURN));
         System.out.println("Event: " + rResponse.getHeaders().getFirst(EVENT_KEY));
+
+        Throw wurf = new Throw();
 
         HttpResponse postRespone = Unirest.post(rResponse.getHeaders().getFirst(Ports.KEY_PLAYER_ON_BOARD_ROLL))
                 .header(Ports.GAME_KEY, rResponse.getHeaders().getFirst(Ports.GAME_KEY))
@@ -154,12 +153,64 @@ public class Aufgabe4 implements Ports {
                 .header(Ports.EVENT_KEY, rResponse.getHeaders().getFirst(Ports.EVENT_KEY))
                 .header(KEY_BOARDS_PLAYER, rResponse.getHeaders().getFirst(KEY_BOARDS_PLAYER))
                 .header(KEY_PLAYER_TURN, rResponse.getHeaders().getFirst(KEY_PLAYER_TURN))
+                .body(new Gson().toJson(wurf))
                 .asString();
 
 
-        return "";
+//        TODO - der AUfruf von roll fehlt!
+
+//        System.out.println("1" + rResponse.getHeaders().getFirst(Ports.GAME_KEY) );
+//        System.out.println("2" + rResponse.getHeaders().getFirst(Ports.DICE_KEY) );
+//        System.out.println("3" +rResponse.getHeaders().getFirst(Ports.BANK_KEY) );
+//        System.out.println("4" + rResponse.getHeaders().getFirst(Ports.BOARD_KEY) );
+//        System.out.println("5" + rResponse.getHeaders().getFirst(Ports.EVENT_KEY) );
+//        System.out.println("6" + rResponse.getHeaders().getFirst(Ports.KEY_BOARD_PLAYER_PLACE) );
+
+        System.out.println("Player_Place " + postRespone.getHeaders().getFirst(Ports.KEY_BOARD_PLAYER_PLACE));
+
+//  TODO - GET Boards Place
+        HttpResponse pResponse = Unirest.get(postRespone.getHeaders().getFirst(Ports.KEY_BOARD_PLAYER_PLACE))
+                .header(Ports.GAME_KEY, postRespone.getHeaders().getFirst(Ports.GAME_KEY))
+                .header(Ports.DICE_KEY, postRespone.getHeaders().getFirst(Ports.DICE_KEY))
+                .header(Ports.BANK_KEY, postRespone.getHeaders().getFirst(Ports.BANK_KEY))
+                .header(Ports.BOARD_KEY, postRespone.getHeaders().getFirst(Ports.BOARD_KEY))
+                .header(Ports.EVENT_KEY, postRespone.getHeaders().getFirst(Ports.EVENT_KEY))
+                .header(Ports.BROOKER_KEY, postRespone.getHeaders().getFirst(Ports.BROOKER_KEY))
+                .asJson();
+
+        System.out.println("pResponse: " + pResponse.getBody().toString());
+        System.out.println("KeyBrokerPlace "+ pResponse.getHeaders().getFirst(Ports.KEY_BROKER_PLACE));
+//  TODO - GET Brokers Place
+        HttpResponse bResponse = Unirest.get(pResponse.getHeaders().getFirst(Ports.KEY_BROKER_PLACE))
+                .header(Ports.GAME_KEY, pResponse.getHeaders().getFirst(Ports.GAME_KEY))
+                .header(Ports.DICE_KEY, pResponse.getHeaders().getFirst(Ports.DICE_KEY))
+                .header(Ports.BANK_KEY, pResponse.getHeaders().getFirst(Ports.BANK_KEY))
+                .header(Ports.BOARD_KEY, pResponse.getHeaders().getFirst(Ports.BOARD_KEY))
+                .header(Ports.EVENT_KEY, pResponse.getHeaders().getFirst(Ports.EVENT_KEY))
+                .header(Ports.BROOKER_KEY, postRespone.getHeaders().getFirst(Ports.BROOKER_KEY))
+                .header(Ports.KEY_BROKER_PLACE, pResponse.getHeaders().getFirst(Ports.KEY_BROKER_PLACE))
+                .asJson();
+
+        System.out.println("bResponse: " + bResponse.getBody().toString());
+
+
+        System.out.println("KEY_BROKER_PLACE_OWNER " + bResponse.getHeaders().getFirst(Ports.KEY_BROKER_PLACE_OWNER));
+
+//        TODO - Post Owner
+        HttpResponse oResponse = Unirest.get(bResponse.getHeaders().getFirst(Ports.KEY_BROKER_PLACE_OWNER))
+                .header(Ports.GAME_KEY, bResponse.getHeaders().getFirst(Ports.GAME_KEY))
+                .header(Ports.DICE_KEY, bResponse.getHeaders().getFirst(Ports.DICE_KEY))
+                .header(Ports.BANK_KEY, bResponse.getHeaders().getFirst(Ports.BANK_KEY))
+                .header(Ports.BOARD_KEY, bResponse.getHeaders().getFirst(Ports.BOARD_KEY))
+                .header(Ports.EVENT_KEY, bResponse.getHeaders().getFirst(Ports.EVENT_KEY))
+                .asJson();
+
+        System.out.println("oResponse: " + oResponse.getBody().toString());
+
+    return "";
     }
 
+//    TODO - PUT Ready von Response getBoardsPlayers!!!
 
 
     public static void main(String[] args) {

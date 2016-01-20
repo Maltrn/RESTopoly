@@ -13,8 +13,12 @@ public interface Ports {
     String EVENT_KEY    =       "eventURI";
     String PLAYER_KEY   =       "playerURI";
     String BROOKER_KEY  =       "brookerURI";
+//   TODO - Neu
     String KEY_BOARDS_PLAYER =  "boards_playerURI";
+    String KEY_BROKER_PLACE_OWNER =  "boards_playerURI";
+
     String KEY_GAME_PLAYER =    "game_playerURI";
+    String KEY_BROKER_PLACE =    "board_placeURI";
     String KEY_PLAYER_GAME_READY = "game_playerReady";
     String KEY_PLAYER_TURN = "playerTurn";
     String KEY_ONBOARD = "onBoard";

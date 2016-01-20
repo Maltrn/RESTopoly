@@ -16,7 +16,6 @@ import restopoly.util.CustomExclusionStrategy;
 import restopoly.util.Ports;
 import restopoly.util.Service;
 
-import javax.sound.sampled.Port;
 import java.util.ArrayList;
 
 import static spark.Spark.*;
@@ -78,6 +77,7 @@ public class GameService implements Ports{
             }
             // Client from GUI
             res.header(Ports.GAME_KEY, req.headers(Ports.GAME_KEY) + "/" + reqGame.getGameid());
+            System.out.println("GameService: " + req.headers(Ports.GAME_KEY) + "/" + reqGame.getGameid());
             res.header(Ports.DICE_KEY, req.headers(Ports.DICE_KEY));
             res.header(Ports.BANK_KEY, req.headers(Ports.BANK_KEY) + "/" + reqGame.getGameid());
             res.header(Ports.BOARD_KEY, req.headers(Ports.BOARD_KEY) + "/" + reqGame.getGameid());
