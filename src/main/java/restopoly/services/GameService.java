@@ -83,7 +83,6 @@ public class GameService{
             res.header(Ports.EVENT_KEY, req.headers(Ports.EVENT_KEY) + "/" + reqGame.getGameid());
             res.header(Ports.BROOKER_KEY, req.headers(Ports.BROOKER_KEY) +"/"+ reqGame.getGameid());
 
-
             games.add(reqGame);
             mutex.addGame(reqGame.getGameid());
 //            Unirest.put(restopoly.util.Ports.BANKSADDRESS + "/"+reqGame.getGameid())
@@ -179,6 +178,7 @@ public class GameService{
             res.header(Ports.EVENT_KEY, req.headers(Ports.EVENT_KEY));
             res.header(Ports.BROOKER_KEY, req.headers(Ports.BROOKER_KEY));
             res.header(Ports.KEY_PLAYER_GAME_READY, req.headers(Ports.KEY_GAME_PLAYER)+"/ready");
+            res.header(Ports.KEY_PLAYER_TURN, req.headers(Ports.KEY_GAME_PLAYER)+"/turn");
 
             Player player = new Player(req.params(":playerid"));
             player.setName(req.queryParams("name"));
@@ -280,7 +280,14 @@ public class GameService{
         put("/games/:gameid/players/:playerid/turn", (req, res) -> {
 //          TODO - Player wird als RequestBody übergeben - weitere Verwendung?
 //            Player player = new Gson().fromJson(req.body().toString(),Player.class);
-
+            res.header(Ports.GAME_KEY, req.headers(Ports.GAME_KEY));
+            res.header(Ports.DICE_KEY, req.headers(Ports.DICE_KEY));
+            res.header(Ports.BANK_KEY, req.headers(Ports.BANK_KEY));
+            res.header(Ports.BOARD_KEY, req.headers(Ports.BOARD_KEY));
+            res.header(Ports.EVENT_KEY, req.headers(Ports.EVENT_KEY));
+            res.header(Ports.BROOKER_KEY, req.headers(Ports.BROOKER_KEY));
+            res.header(Ports.KEY_ONBANK,req.headers(Ports.BANK_KEY)+"/players/"+req.params(":playerid"));
+            res.header(Ports.KEY_ONBOARD,req.headers(Ports.BOARD_KEY)+"/players/"+req.params(":playerid"));
             res.status(HttpStatus.SC_CONFLICT);
             String gameid = req.params(":gameid");
             String playerid = req.params(":playerid");
