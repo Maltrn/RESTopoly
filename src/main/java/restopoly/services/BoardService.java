@@ -215,6 +215,12 @@ public class BoardService {
         post("/boards/:gameid/players/:playerid/roll", (req, res) -> {
             res.status(404);
             res.header("Content-Type", "application/json");
+            res.header(Ports.GAME_KEY, req.headers(Ports.GAME_KEY));
+            res.header(Ports.DICE_KEY, req.headers(Ports.DICE_KEY));
+            res.header(Ports.BANK_KEY, req.headers(Ports.BANK_KEY));
+            res.header(Ports.BOARD_KEY, req.headers(Ports.BOARD_KEY));
+            res.header(Ports.EVENT_KEY, req.headers(Ports.EVENT_KEY));
+            res.header(Ports.BROOKER_KEY, req.headers(Ports.BROOKER_KEY));
 
             Gson gsonMutex = new Gson();
 //            HttpResponse playerResponse  = Unirest.get(GAMESADDRESS + "/" + req.params(":gameid") + "/players/turn").asJson();
@@ -246,8 +252,9 @@ public class BoardService {
                 if (b!=null && p != null){
                     res.status(200);
 
-                    p.setPosition(p.getPosition()+(roll1+roll2));
-
+                    p.setPosition(p.getPosition()+(roll1+roll2)%b.getFields().size());
+                    p.setPlace(b.getField(p.getPosition()).getPlace());
+                    res.header("board_player_place",p.getPlace().getName());
                     Event event = new Event("type", "Player throwed " + (roll1 + roll2),"resource", "reason", p);
                     Unirest.post(restopoly.util.Ports.EVENTSADDRESS).queryString("gameid", req.params(":gameid")).body(new Gson().toJson(event)).asString();
 
