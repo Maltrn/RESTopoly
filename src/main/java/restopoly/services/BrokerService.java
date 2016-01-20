@@ -87,18 +87,21 @@ public class BrokerService {
             if (broker != null) {
                 for (Estate estate : broker.getEstates()) {
                     if (estate.getPlace().equals(Ports.BOARDSADDRESS+"/fields/places/" + p_id)){
-//                        TODO - Banktransfer vom Vister zum Owner
-//                        TODO - return a list of Events
-//                        TODO - Transaktional????
+                        estate.setVisit(Ports.BOARDSADDRESS + "/" +g_id + "/players/" + pl_id);
                         if (!estate.getOwner().isEmpty()) {
-                            HttpResponse bankRes  = Unirest.get(Ports.BANKSADDRESS + "/" + g_id + "/transfer/from/" + pl_id + "/to/" + estate.getOwner() + "/" + estate.getRent()).asJson();
+                            HttpResponse playerRes  = Unirest.get(estate.getOwner()).asJson();
+                            Player tempPlayer = gson.fromJson(playerRes.getBody().toString(), Player.class);
+
+                            HttpResponse bankRes  = Unirest.post(Ports.BANKSADDRESS + "/" + g_id + "/transfer/from/" + pl_id + "/to/" + tempPlayer.getId() + "/" + estate.getRent()).asJson();
                             Event[] resultarray = gson.fromJson(bankRes.getBody().toString(), Event[].class);
                             return gson.toJson(resultarray);
                         }
                     }
                 }
             }
-            return "";
+//            Todo - Rückgabe muss angepasst werden
+            Event[] resArray = new Event[0];
+            return gson.toJson(resArray);
         });
 
 //      Todo - Buy the place in question. It will fail if it is not for sale
@@ -116,11 +119,11 @@ public class BrokerService {
             if (broker != null && reqPlayer!=null) {
                 for (Estate estate : broker.getEstates()) {
                     if (estate.getPlace().equals(Ports.BOARDSADDRESS+"/fields/places/" + p_id)){
-//                        TODO - Prüfung auf isEmpty()???
-                        if (!estate.getOwner().isEmpty()){
+                        if (estate.getOwner().isEmpty()){
                             res.status(HttpStatus.SC_OK);
 //                            Todo - Transaktion einleiten
-                            HttpResponse bankRes  = Unirest.get(Ports.BANKSADDRESS + "/" + g_id + "/transfer/from/" + reqPlayer.getId()+"/"+estate.getValue()).asJson();
+                            HttpResponse bankRes  = Unirest.post(Ports.BANKSADDRESS + "/" + g_id + "/transfer/from/" + reqPlayer.getId() + "/" + estate.getValue()).asJson();
+                            estate.setOwner(Ports.BOARDSADDRESS + "/" +g_id + "/players/" + reqPlayer.getId());
                             Event[] resultarray = gson.fromJson(bankRes.getBody().toString(), Event[].class);
 //                            Todo - Events zurückgeben
                             return gson.toJson(resultarray);
@@ -144,7 +147,6 @@ public class BrokerService {
                 if (broker.getGameid().equals(req.params(":gameid"))) {
                     res.status(HttpStatus.SC_OK);
                     Gson gson = new Gson();
-                    System.out.println("getEstates");
                     return gson.toJson(broker.getEstates());
                 }
             }
