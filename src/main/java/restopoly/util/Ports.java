@@ -6,13 +6,16 @@ package restopoly.util;
 public interface Ports {
 
     //KEY
-    String BANK_KEY     = "bankURI";
-    String BOARD_KEY    = "boardURI";
-    String DICE_KEY     = "diceURI";
-    String GAME_KEY     = "gameURI";
-    String EVENT_KEY    = "eventURI";
-    String PLAYER_KEY   = "playerURI";
-    String BROOKER_KEY  = "brookerURI";
+    String BANK_KEY     =       "bankURI";
+    String BOARD_KEY    =       "boardURI";
+    String DICE_KEY     =       "diceURI";
+    String GAME_KEY     =       "gameURI";
+    String EVENT_KEY    =       "eventURI";
+    String PLAYER_KEY   =       "playerURI";
+    String BROOKER_KEY  =       "brookerURI";
+    String KEY_BOARDS_PLAYER =  "boards_playerURI";
+    String KEY_GAME_PLAYER =    "game_playerURI";
+    String KEY_PLAYER_GAME_READY = "game_playerReady";
 
     //    String GAMESADDRESS = "http://172.18.0.53:4567/games";
     String GAMESADDRESS = "http://localhost:4567/games";
@@ -30,6 +33,7 @@ public interface Ports {
     String PLAYERSADDRESS = "http://172.18.0.16:4567/player";
     String PLAYERSWEBSOCKETADDRESS = "ws://172.18.0.16:4567";
 //    String BROKERSADDRESS = "http://172.18.0.17:4567/brokers";
+
 
 
 //    #################### Adressen Krystia #############################

@@ -38,11 +38,6 @@ public class RESTopoly {
     }
 
 
-
-
-
-
-
     // METHODS
 
     public String createGame() throws UnirestException {

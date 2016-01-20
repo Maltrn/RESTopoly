@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
+import org.apache.http.HttpStatus;
 import restopoly.resources.Account;
 import restopoly.resources.Bank;
 import restopoly.resources.Event;
@@ -44,6 +45,14 @@ public class BankService {
 
         put("/banks/:gameid", (req, res) -> {
             res.header("Content-Type", "application/json");
+            res.status(HttpStatus.SC_OK);
+            res.header(Ports.GAME_KEY, req.headers(Ports.GAME_KEY));
+            res.header(Ports.DICE_KEY, req.headers(Ports.DICE_KEY));
+            res.header(Ports.BANK_KEY, req.headers(Ports.BANK_KEY));
+            res.header(Ports.BOARD_KEY, req.headers(Ports.BOARD_KEY));
+            res.header(Ports.EVENT_KEY, req.headers(Ports.EVENT_KEY));
+            res.header(Ports.BROOKER_KEY, req.headers(Ports.BROOKER_KEY));
+
             Bank bank = new Bank(req.params(":gameid"));
             banks.add(bank);
             Gson gson = new GsonBuilder()
@@ -52,8 +61,14 @@ public class BankService {
         });
 
         post("/banks/:gameid/players", (req, res) -> {
-            res.status(201);
+            res.status(HttpStatus.SC_OK);
             res.header("Content-Type", "application/json");
+            res.header(Ports.GAME_KEY, req.headers(Ports.GAME_KEY));
+            res.header(Ports.DICE_KEY, req.headers(Ports.DICE_KEY));
+            res.header(Ports.BANK_KEY, req.headers(Ports.BANK_KEY));
+            res.header(Ports.BOARD_KEY, req.headers(Ports.BOARD_KEY));
+            res.header(Ports.EVENT_KEY, req.headers(Ports.EVENT_KEY));
+            res.header(Ports.BROOKER_KEY, req.headers(Ports.BROOKER_KEY));
             Bank bank = null;
             for(Bank b : banks){
                 if(b.getGameid().equals(req.params(":gameid"))) bank=b;

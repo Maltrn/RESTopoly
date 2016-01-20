@@ -60,6 +60,7 @@ public class BoardService {
                 }
             }
             boards.add(board);
+            Unirest.put(req.headers(Ports.BROOKER_KEY) + "/" + req.params(":gameid"));
 
 //            Unirest.put(uri_brooker + "/" + req.params(":gameid"))
             Unirest.put(Ports.BROKERSADDRESS + "/" + req.params(":gameid"))
