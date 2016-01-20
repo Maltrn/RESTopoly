@@ -155,6 +155,7 @@ public class BoardService implements Ports {
             res.header(Ports.EVENT_KEY, req.headers(Ports.EVENT_KEY));
             res.header(Ports.BROOKER_KEY, req.headers(Ports.BROOKER_KEY));
             res.header(KEY_BOARDS_PLAYER, req.headers(KEY_BOARDS_PLAYER));
+            res.header(KEY_PLAYER_GAME_READY, req.headers(GAME_KEY) + "/players/" + req.params(":playerid") + "/ready");
             res.header(Ports.KEY_PLAYER_ON_BOARD_ROLL,req.headers(Ports.KEY_BOARDS_PLAYER) +"/roll");
             res.header(KEY_PLAYER_TURN, req.headers(KEY_PLAYER_TURN));
             for(Board b : boards){
@@ -232,23 +233,11 @@ public class BoardService implements Ports {
 
             Gson gsonMutex = new Gson();
             HttpResponse playerResponse  = Unirest.get(GAMESADDRESS + "/" + req.params(":gameid") + "/players/turn").asJson();
-           // HttpResponse playerResponse  = Unirest.get(GAMESADDRESS + "/" + req.params(":gameid") + "/players/turn").asJson();
-//            HttpResponse playerResponse  = Unirest.get(req.headers(KEY_PLAYER_TURN))
-//                    .header(Ports.GAME_KEY, req.headers(Ports.GAME_KEY))
-//                    .header(Ports.DICE_KEY, req.headers(Ports.DICE_KEY))
-//                    .header(Ports.BANK_KEY, req.headers(Ports.BANK_KEY))
-//                    .header(Ports.BOARD_KEY, req.headers(Ports.BOARD_KEY))
-//                    .header(Ports.EVENT_KEY, req.headers(Ports.EVENT_KEY))
-//                    .header(KEY_BOARDS_PLAYER, req.headers(KEY_BOARDS_PLAYER))
-//                    .header(KEY_PLAYER_TURN, req.headers(KEY_PLAYER_TURN))
-//                    .asJson();
-
 
             Player mutexPlayer = gsonMutex.fromJson(playerResponse.getBody().toString(), Player.class);
 
-            System.out.println("MutexPlayer" + mutexPlayer);
-            System.out.println("playerResp" + playerResponse.getBody().toString());
-
+//            System.out.println("MutexPlayer" + mutexPlayer);
+//            System.out.println("playerResp" + playerResponse.getBody().toString());
 
             if (mutexPlayer!= null && mutexPlayer.getId().equals(req.params(":playerid"))) {
 
@@ -270,8 +259,8 @@ public class BoardService implements Ports {
                 Player p= getPlayer(g_ID, p_ID);
                 Board b = getGameB(g_ID);
 
-                System.out.println("Board " + b);
-                System.out.println("Player " + p);
+//                System.out.println("Board " + b);
+//                System.out.println("Player " + p);
 
                 PlayerBoardDTO playerBoardDTO = null;
                 if (b!=null && p != null){
@@ -296,11 +285,6 @@ public class BoardService implements Ports {
             return "";
         });
 
-
-
-//      TODO - ggf. eine Variable für die Referenz in Place anlegen
-//      List of available place
-//      response: ["/boards/42/places/0", "/boards/42/places/1"]
         get("/boards/:gameid/places", (req, res) -> {
             res.status(200);
             res.header("Content-Type", "application/json");
@@ -318,8 +302,6 @@ public class BoardService implements Ports {
             return new Gson().toJson(result);
         });
 
-//      Gets a place
-//      response: {"name":"Los"}
         get("/boards/:gameid/places/:placeid", (req, res) -> {
             res.status(200);
             res.header("Content-Type", "application/json");
@@ -346,8 +328,6 @@ public class BoardService implements Ports {
             return "";
         });
 
-//      places a places
-//      response: -
         put("/boards/:gameid/places/:place", (req, res) -> {
             res.header("Content-Type", "application/json");
             Place newPlace = new Place(req.body());

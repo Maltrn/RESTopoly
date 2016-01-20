@@ -169,9 +169,6 @@ public class BrokerService {
             Broker broker = getBroker(req.params(":gameid"));
             if (broker != null) {
                 for(Estate estate : broker.getEstates()){
-                    System.out.println("Estate " + estate.getPlace());
-                    System.out.println("Estate2 " + req.params(":placeid"));
-                    System.out.println("Adresse " +Ports.BOARDSADDRESS + "/fields/places/" + req.params(":placeid"));
                     if (estate.getPlace().equals(Ports.BOARDSADDRESS + "/fields/places/" + req.params(":placeid"))){
                         res.status(200);
                         res.header(Ports.KEY_BROKER_PLACE_OWNER, req.headers(Ports.KEY_BROKER_PLACE)+ "/owner");

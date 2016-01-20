@@ -13,21 +13,6 @@ import restopoly.util.Ports;
  */
 public class Aufgabe4 implements Ports {
 
-
-
-//    public String createGame() throws UnirestException {
-//        HttpResponse response = Unirest.post(restopoly.util.Ports.GAMESADDRESS)
-//                .header(Ports.GAMESADDRESS, restopoly.util.Ports.GAMESADDRESS)
-//                .header(Ports.DICE_KEY, restopoly.util.Ports.DICEADDRESS)
-//                .header(Ports.BANK_KEY, restopoly.util.Ports.BANKSADDRESS)
-//                .header(Ports.BOARD_KEY, restopoly.util.Ports.BOARDSADDRESS)
-//                .header(Ports.EVENT_KEY, restopoly.util.Ports.EVENTSADDRESS)
-//                .asJson();
-//        Gson gson = new Gson();
-//        Game game = gson.fromJson(response.getBody().toString(), Game.class);
-//        return game.getGameid();
-//    }
-
     //Aufgabe 4
 
     public String aufgabe_4_1() throws UnirestException {
@@ -126,7 +111,6 @@ public class Aufgabe4 implements Ports {
                 .header(KEY_PLAYER_TURN, req_a4_2.getHeaders().getFirst(KEY_PLAYER_TURN))
                 .asString();
 
-
         System.out.println("PLAYER ON BOARD:" + uResponse.getHeaders().getFirst(Ports.KEY_BOARDS_PLAYER));
 
         HttpResponse rResponse = Unirest.get(uResponse.getHeaders().getFirst(Ports.KEY_ONBOARD))
@@ -156,16 +140,6 @@ public class Aufgabe4 implements Ports {
                 .body(new Gson().toJson(wurf))
                 .asString();
 
-
-//        TODO - der AUfruf von roll fehlt!
-
-//        System.out.println("1" + rResponse.getHeaders().getFirst(Ports.GAME_KEY) );
-//        System.out.println("2" + rResponse.getHeaders().getFirst(Ports.DICE_KEY) );
-//        System.out.println("3" +rResponse.getHeaders().getFirst(Ports.BANK_KEY) );
-//        System.out.println("4" + rResponse.getHeaders().getFirst(Ports.BOARD_KEY) );
-//        System.out.println("5" + rResponse.getHeaders().getFirst(Ports.EVENT_KEY) );
-//        System.out.println("6" + rResponse.getHeaders().getFirst(Ports.KEY_BOARD_PLAYER_PLACE) );
-
         System.out.println("Player_Place " + postRespone.getHeaders().getFirst(Ports.KEY_BOARD_PLAYER_PLACE));
 
 //  TODO - GET Boards Place
@@ -193,7 +167,6 @@ public class Aufgabe4 implements Ports {
 
         System.out.println("bResponse: " + bResponse.getBody().toString());
 
-
         System.out.println("KEY_BROKER_PLACE_OWNER " + bResponse.getHeaders().getFirst(Ports.KEY_BROKER_PLACE_OWNER));
 
 //        TODO - Post Owner
@@ -207,11 +180,19 @@ public class Aufgabe4 implements Ports {
 
         System.out.println("oResponse: " + oResponse.getBody().toString());
 
+//    TODO - PUT Ready von Response
+        System.out.println("KEY_PLAYER_GAME_READY " + rResponse.getHeaders().getFirst(Ports.KEY_PLAYER_GAME_READY));
+
+        HttpResponse readyResponse = Unirest.put(rResponse.getHeaders().getFirst(Ports.KEY_PLAYER_GAME_READY))
+            .header(Ports.GAME_KEY, rResponse.getHeaders().getFirst(Ports.GAME_KEY))
+            .header(Ports.DICE_KEY, rResponse.getHeaders().getFirst(Ports.DICE_KEY))
+            .header(Ports.BANK_KEY, rResponse.getHeaders().getFirst(Ports.BANK_KEY))
+            .header(Ports.BOARD_KEY, rResponse.getHeaders().getFirst(Ports.BOARD_KEY))
+            .header(Ports.EVENT_KEY, rResponse.getHeaders().getFirst(Ports.EVENT_KEY))
+            .asJson();
+
     return "";
     }
-
-//    TODO - PUT Ready von Response getBoardsPlayers!!!
-
 
     public static void main(String[] args) {
         Aufgabe4 a4 = new Aufgabe4();
