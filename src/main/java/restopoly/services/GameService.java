@@ -21,7 +21,7 @@ import java.util.ArrayList;
 
 import static spark.Spark.*;
 
-public class GameService{
+public class GameService implements Ports{
 
     private static ArrayList<Game> games = new ArrayList<>();
 
@@ -261,7 +261,7 @@ public class GameService{
             res.header(Ports.BROOKER_KEY, req.headers(Ports.BROOKER_KEY));
             res.header(Ports.KEY_GAME_PLAYER, req.headers(Ports.KEY_GAME_PLAYER));
             res.header(Ports.KEY_PLAYER_TURN, req.headers(Ports.KEY_GAME_PLAYER)+"/turn");
-
+            res.header(KEY_BOARDS_PLAYER, req.headers(KEY_BOARDS_PLAYER));
             Game game = null;
             for(Game g : games){
                 if(g.getGameid().equals(req.params(":gameid"))){
@@ -311,9 +311,12 @@ public class GameService{
             res.header(Ports.BROOKER_KEY, req.headers(Ports.BROOKER_KEY));
             res.header(Ports.KEY_ONBANK,req.headers(Ports.BANK_KEY)+"/players/"+req.params(":playerid"));
             res.header(Ports.KEY_ONBOARD,req.headers(Ports.BOARD_KEY)+"/players/"+req.params(":playerid"));
+            res.header(KEY_BOARDS_PLAYER, req.headers(KEY_BOARDS_PLAYER));
+            res.header(KEY_PLAYER_TURN, req.headers(KEY_PLAYER_TURN));
             res.status(HttpStatus.SC_CONFLICT);
             String gameid = req.params(":gameid");
             String playerid = req.params(":playerid");
+
 
             if (mutex.mutexBlockedByPlayer(gameid, playerid)) {
                 System.out.println("mutexBlockedByPlayer");

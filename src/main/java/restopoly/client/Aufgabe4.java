@@ -15,7 +15,7 @@ import javax.sound.midi.Soundbank;
 /**
  * Created by mizus on 19.01.16.
  */
-public class Aufgabe4 {
+public class Aufgabe4 implements Ports {
 
 
 
@@ -104,6 +104,7 @@ public class Aufgabe4 {
                     .header(Ports.EVENT_KEY, req_nick.getHeaders().getFirst(Ports.EVENT_KEY))
                     .header(Ports.KEY_PLAYER_GAME_READY, req_nick.getHeaders().getFirst(Ports.KEY_PLAYER_GAME_READY))
                     .header(Ports.KEY_GAME_PLAYER, req_nick.getHeaders().getFirst(Ports.KEY_GAME_PLAYER))
+                    .header(KEY_BOARDS_PLAYER, req_nick.getHeaders().getFirst(KEY_BOARDS_PLAYER))
                     .asString();
 
         //
@@ -114,7 +115,7 @@ public class Aufgabe4 {
     public String aufgabe_4_3() throws UnirestException {
         HttpResponse req_a4_2 = aufgabe_4_2();
 
-        System.out.println("Nick: " + req_a4_2.getHeaders().getFirst(Ports.KEY_PLAYER_TURN));
+        System.out.println("Nick: " + req_a4_2.getHeaders().getFirst(Ports.KEY_BOARDS_PLAYER));
 
         System.out.println(req_a4_2.getHeaders().getFirst(Ports.KEY_PLAYER_TURN));
         HttpResponse uResponse = Unirest.put(req_a4_2.getHeaders().getFirst(Ports.KEY_PLAYER_TURN))
@@ -124,10 +125,12 @@ public class Aufgabe4 {
                 .header(Ports.BOARD_KEY, req_a4_2.getHeaders().getFirst(Ports.BOARD_KEY))
                 .header(Ports.EVENT_KEY, req_a4_2.getHeaders().getFirst(Ports.EVENT_KEY))
                 .header(Ports.KEY_BOARDS_PLAYER, req_a4_2.getHeaders().getFirst(Ports.KEY_BOARDS_PLAYER))
+                .header(Ports.KEY_GAME_PLAYER, req_a4_2.getHeaders().getFirst(Ports.KEY_GAME_PLAYER))
+                .header(KEY_PLAYER_TURN, req_a4_2.getHeaders().getFirst(KEY_PLAYER_TURN))
                 .asString();
 
 
-        System.out.println("PLAYER ON BOARD:" + uResponse.getHeaders().getFirst(Ports.KEY_BOARDS_PLAYER));
+        System.out.println("PLAYER ON BOARD:" + uResponse.getHeaders().getFirst(Ports.KEY_ONBOARD));
 
         HttpResponse rResponse = Unirest.get(uResponse.getHeaders().getFirst(Ports.KEY_ONBOARD))
                 .header(Ports.GAME_KEY, uResponse.getHeaders().getFirst(Ports.GAME_KEY))
@@ -135,13 +138,26 @@ public class Aufgabe4 {
                 .header(Ports.BANK_KEY, uResponse.getHeaders().getFirst(Ports.BANK_KEY))
                 .header(Ports.BOARD_KEY, uResponse.getHeaders().getFirst(Ports.BOARD_KEY))
                 .header(Ports.EVENT_KEY, uResponse.getHeaders().getFirst(Ports.EVENT_KEY))
+                .header(KEY_BOARDS_PLAYER, uResponse.getHeaders().getFirst(KEY_BOARDS_PLAYER))
+                .header(KEY_PLAYER_TURN, uResponse.getHeaders().getFirst(KEY_PLAYER_TURN))
                 .asJson();
 
-        System.out.println(rResponse.getHeaders().getFirst(Ports.KEY_PLAYER_ON_BOARD_ROLL));
+        System.out.println("Roll" + rResponse.getHeaders().getFirst(Ports.KEY_PLAYER_ON_BOARD_ROLL));
+        System.out.println("Turn" + rResponse.getHeaders().getFirst(KEY_PLAYER_TURN));
+        System.out.println("Event: " + rResponse.getHeaders().getFirst(EVENT_KEY));
 
-        //HttpResponse postRespone = Unirest.post()
+        HttpResponse postRespone = Unirest.post(rResponse.getHeaders().getFirst(Ports.KEY_PLAYER_ON_BOARD_ROLL))
+                .header(Ports.GAME_KEY, rResponse.getHeaders().getFirst(Ports.GAME_KEY))
+                .header(Ports.DICE_KEY, rResponse.getHeaders().getFirst(Ports.DICE_KEY))
+                .header(Ports.BANK_KEY, rResponse.getHeaders().getFirst(Ports.BANK_KEY))
+                .header(Ports.BOARD_KEY, rResponse.getHeaders().getFirst(Ports.BOARD_KEY))
+                .header(Ports.EVENT_KEY, rResponse.getHeaders().getFirst(Ports.EVENT_KEY))
+                .header(KEY_BOARDS_PLAYER, rResponse.getHeaders().getFirst(KEY_BOARDS_PLAYER))
+                .header(KEY_PLAYER_TURN, rResponse.getHeaders().getFirst(KEY_PLAYER_TURN))
+                .asString();
 
-    return "";
+
+        return "";
     }
 
 

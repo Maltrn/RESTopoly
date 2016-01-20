@@ -23,7 +23,7 @@ import static spark.Spark.*;
 /**
  * Created by Krystian.Graczyk on 27.11.15.
  */
-public class BoardService {
+public class BoardService implements Ports {
     private static ArrayList<Board> boards = new ArrayList<>();
 
     public static void main(String[] args) {
@@ -80,6 +80,8 @@ public class BoardService {
         });
 
         put("/boards/:gameid/players/:playerid", (req, res) -> {
+
+
             Player player = new Gson().fromJson(req.body().toString(),Player.class);
 
             Board board = null;
@@ -123,6 +125,7 @@ public class BoardService {
             res.header(Ports.BOARD_KEY, req.headers(Ports.BOARD_KEY));
             res.header(Ports.EVENT_KEY, req.headers(Ports.EVENT_KEY));
             res.header(Ports.BROOKER_KEY, req.headers(Ports.BROOKER_KEY));
+            res.header(KEY_PLAYER_TURN, req.headers(KEY_PLAYER_TURN));
             ArrayList<Player> result = new ArrayList<Player>();
             int i = 0;
             for(Board b : boards){
@@ -150,7 +153,9 @@ public class BoardService {
             res.header(Ports.BOARD_KEY, req.headers(Ports.BOARD_KEY));
             res.header(Ports.EVENT_KEY, req.headers(Ports.EVENT_KEY));
             res.header(Ports.BROOKER_KEY, req.headers(Ports.BROOKER_KEY));
-            res.header(Ports.KEY_PLAYER_ON_BOARD_ROLL,req.headers(Ports.KEY_BOARDS_PLAYER)+ req.params(":playerid") +"/roll");
+            res.header(KEY_BOARDS_PLAYER, req.headers(KEY_BOARDS_PLAYER));
+            res.header(Ports.KEY_PLAYER_ON_BOARD_ROLL,req.headers(Ports.KEY_BOARDS_PLAYER) +"/roll");
+            res.header(KEY_PLAYER_TURN, req.headers(KEY_PLAYER_TURN));
             for(Board b : boards){
                 if(b.getGameid().equals(req.params(":gameid")))
                     for(Field f :b.getFields()){
@@ -221,10 +226,21 @@ public class BoardService {
             res.header(Ports.BOARD_KEY, req.headers(Ports.BOARD_KEY));
             res.header(Ports.EVENT_KEY, req.headers(Ports.EVENT_KEY));
             res.header(Ports.BROOKER_KEY, req.headers(Ports.BROOKER_KEY));
+            res.header(KEY_PLAYER_TURN, req.headers(KEY_PLAYER_TURN));
 
             Gson gsonMutex = new Gson();
 //            HttpResponse playerResponse  = Unirest.get(GAMESADDRESS + "/" + req.params(":gameid") + "/players/turn").asJson();
-            HttpResponse playerResponse  = Unirest.get(GAMESADDRESS + "/" + req.params(":gameid") + "/players/turn").asJson();
+           // HttpResponse playerResponse  = Unirest.get(GAMESADDRESS + "/" + req.params(":gameid") + "/players/turn").asJson();
+            HttpResponse playerResponse  = Unirest.get(req.headers(KEY_PLAYER_TURN))
+                    .header(Ports.GAME_KEY, req.headers(Ports.GAME_KEY))
+                    .header(Ports.DICE_KEY, req.headers(Ports.DICE_KEY))
+                    .header(Ports.BANK_KEY, req.headers(Ports.BANK_KEY))
+                    .header(Ports.BOARD_KEY, req.headers(Ports.BOARD_KEY))
+                    .header(Ports.EVENT_KEY, req.headers(Ports.EVENT_KEY))
+                    .header(KEY_BOARDS_PLAYER, req.headers(KEY_BOARDS_PLAYER))
+                    .header(KEY_PLAYER_TURN, req.headers(KEY_PLAYER_TURN))
+                    .asJson();
+
 
             Player mutexPlayer = gsonMutex.fromJson(playerResponse.getBody().toString(), Player.class);
 
@@ -254,11 +270,11 @@ public class BoardService {
 
                     p.setPosition(p.getPosition()+(roll1+roll2)%b.getFields().size());
                     p.setPlace(b.getField(p.getPosition()).getPlace());
-                    res.header("board_player_place",p.getPlace().getName());
+                    res.header("board_player_place", p.getPlace().getName());
                     Event event = new Event("type", "Player throwed " + (roll1 + roll2),"resource", "reason", p);
-                    Unirest.post(restopoly.util.Ports.EVENTSADDRESS).queryString("gameid", req.params(":gameid")).body(new Gson().toJson(event)).asString();
+                    Unirest.post(EVENT_KEY).queryString("gameid", req.params(":gameid")).body(new Gson().toJson(event)).asString();
 
-                    HttpResponse tempEvents = Unirest.post(Ports.BROKERSADDRESS + "/" + g_ID + "/places/" + p.getPosition() + "/visit/" + p.getId()).asString();
+                    HttpResponse tempEvents = Unirest.post(BROKERSADDRESS + "/" + g_ID + "/places/" + p.getPosition() + "/visit/" + p.getId()).asString();
                     Gson gsonEvents = new Gson();
                     Event[] resultEvents = gsonEvents.fromJson(tempEvents.getBody().toString(), Event[].class);
 
