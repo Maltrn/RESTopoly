@@ -228,6 +228,7 @@ public class BoardService implements Ports {
             res.header(Ports.BROOKER_KEY, req.headers(Ports.BROOKER_KEY));
             res.header(KEY_PLAYER_TURN, req.headers(KEY_PLAYER_TURN));
 
+
             Gson gsonMutex = new Gson();
 //            HttpResponse playerResponse  = Unirest.get(GAMESADDRESS + "/" + req.params(":gameid") + "/players/turn").asJson();
            // HttpResponse playerResponse  = Unirest.get(GAMESADDRESS + "/" + req.params(":gameid") + "/players/turn").asJson();
