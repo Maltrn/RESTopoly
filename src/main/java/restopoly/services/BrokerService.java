@@ -87,9 +87,6 @@ public class BrokerService {
             if (broker != null) {
                 for (Estate estate : broker.getEstates()) {
                     if (estate.getPlace().equals(Ports.BOARDSADDRESS+"/fields/places/" + p_id)){
-//                        TODO - Banktransfer vom Vister zum Owner
-//                        TODO - return a list of Events
-//                        TODO - Transaktional????
                         estate.setVisit(Ports.BOARDSADDRESS + "/" +g_id + "/players/" + pl_id);
                         if (!estate.getOwner().isEmpty()) {
                             HttpResponse playerRes  = Unirest.get(estate.getOwner()).asJson();
@@ -102,7 +99,9 @@ public class BrokerService {
                     }
                 }
             }
-            return "";
+//            Todo - Rückgabe muss angepasst werden
+            Event[] resArray = new Event[0];
+            return gson.toJson(resArray);
         });
 
 //      Todo - Buy the place in question. It will fail if it is not for sale

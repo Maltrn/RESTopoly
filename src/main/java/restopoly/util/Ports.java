@@ -23,9 +23,10 @@ public interface Ports {
 //    String BROKERSADDRESS = "http://localhost:4569/brokers";
     String BROKERSADDRESS = "http://localhost:4571/brokers";
     String EVENTSADDRESS = "http://localhost:4570/events";
+    String DICEADDRESS = "http://localhost:4572/dice";
 
 //    String BANKSADDRESS = "http://172.18.0.54:12012/banks";
-    String DICEADDRESS = "http://172.18.0.9:4567/dice";
+//    String DICEADDRESS = "http://172.18.0.9:4567/dice";
 //    String GAMESADDRESS = "http://172.18.0.10:4567/games";
 //    String BOARDSADDRESS = "http://172.18.0.12:4567/boards";
 //    String EVENTSADDRESS = "http://172.18.0.13:4567/events";

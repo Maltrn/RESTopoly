@@ -236,8 +236,6 @@ public class BoardService {
                     HttpResponse tempEvents = Unirest.post(Ports.BROKERSADDRESS + "/" + g_ID + "/places/" + p.getPosition() + "/visit/" + p.getId()).asString();
                     Gson gsonEvents = new Gson();
                     Event[] resultEvents = gsonEvents.fromJson(tempEvents.getBody().toString(), Event[].class);
-                    System.out.println("ResEve " + resultEvents);
-                    System.out.println("ResEveLength " + resultEvents.length);
 
                     playerBoardDTO = new PlayerBoardDTO(p, b, resultEvents);
 
