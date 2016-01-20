@@ -117,12 +117,15 @@ public class BoardService {
             res.status(404);
             res.header("Content-Type", "application/json");
             ArrayList<Player> result = new ArrayList<Player>();
+            int i = 0;
             for(Board b : boards){
                 if(b.getGameid().equals(req.params(":gameid")))
                     res.status(200);
                     for(Field f :b.getFields()){
                         for(Player p : f.getPlayers()) {
                             result.add(p);
+                            res.header("player_on_board_"+i,req.headers(Ports.BOARD_KEY)+"/players/"+p.getId());
+                            i++;
                         }
                     }
             }
@@ -134,6 +137,7 @@ public class BoardService {
         get("/boards/:gameid/players/:playerid", (req, res) -> {
             res.status(404);
             res.header("Content-Type", "application/json");
+            res.header("player_on_board_roll",req.headers("player_on_board"+req.params(":playerid"))+"/roll");
             for(Board b : boards){
                 if(b.getGameid().equals(req.params(":gameid")))
                     for(Field f :b.getFields()){
