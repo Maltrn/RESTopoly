@@ -116,6 +116,12 @@ public class BoardService {
         get("/boards/:gameid/players", (req, res) -> {
             res.status(404);
             res.header("Content-Type", "application/json");
+            res.header(Ports.GAME_KEY, req.headers(Ports.GAME_KEY));
+            res.header(Ports.DICE_KEY, req.headers(Ports.DICE_KEY));
+            res.header(Ports.BANK_KEY, req.headers(Ports.BANK_KEY));
+            res.header(Ports.BOARD_KEY, req.headers(Ports.BOARD_KEY));
+            res.header(Ports.EVENT_KEY, req.headers(Ports.EVENT_KEY));
+            res.header(Ports.BROOKER_KEY, req.headers(Ports.BROOKER_KEY));
             ArrayList<Player> result = new ArrayList<Player>();
             int i = 0;
             for(Board b : boards){
@@ -137,6 +143,12 @@ public class BoardService {
         get("/boards/:gameid/players/:playerid", (req, res) -> {
             res.status(404);
             res.header("Content-Type", "application/json");
+            res.header(Ports.GAME_KEY, req.headers(Ports.GAME_KEY));
+            res.header(Ports.DICE_KEY, req.headers(Ports.DICE_KEY));
+            res.header(Ports.BANK_KEY, req.headers(Ports.BANK_KEY));
+            res.header(Ports.BOARD_KEY, req.headers(Ports.BOARD_KEY));
+            res.header(Ports.EVENT_KEY, req.headers(Ports.EVENT_KEY));
+            res.header(Ports.BROOKER_KEY, req.headers(Ports.BROOKER_KEY));
             res.header("player_on_board_roll",req.headers("player_on_board"+req.params(":playerid"))+"/roll");
             for(Board b : boards){
                 if(b.getGameid().equals(req.params(":gameid")))
