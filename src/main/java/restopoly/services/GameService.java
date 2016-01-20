@@ -279,7 +279,6 @@ public class GameService{
                 res.status(HttpStatus.SC_OK);
             }
             if (mutex.isMutexFree(gameid)) {
-                System.out.println("ismMutexFree");
                 res.status(HttpStatus.SC_CREATED);
                 mutex.changeMutexToPlayer(gameid, playerid);
             }

@@ -205,7 +205,6 @@ public class BoardService {
             Player mutexPlayer = gsonMutex.fromJson(playerResponse.getBody().toString(), Player.class);
 
             if (mutexPlayer!= null && mutexPlayer.getId().equals(req.params(":playerid"))) {
-                System.out.println("If- Player " +mutexPlayer.getId());
 
                 RollDTO rollDto = new Gson().fromJson(req.body().toString(),RollDTO.class);
 
@@ -230,19 +229,19 @@ public class BoardService {
                     res.status(200);
 
                     p.setPosition(p.getPosition()+(roll1+roll2));
-//                   TODO - Boards meldet Player als Visitor an!
-                    Unirest.post(Ports.BROKERSADDRESS + "/" + g_ID + "/places/" + p.getPosition() + "/visit/" + p.getId());
 
-                    playerBoardDTO = new PlayerBoardDTO(p, b);
+                    Event event = new Event("type", "Player throwed " + (roll1 + roll2),"resource", "reason", p);
+                    Unirest.post(restopoly.util.Ports.EVENTSADDRESS).queryString("gameid", req.params(":gameid")).body(new Gson().toJson(event)).asString();
+
+                    HttpResponse tempEvents = Unirest.post(Ports.BROKERSADDRESS + "/" + g_ID + "/places/" + p.getPosition() + "/visit/" + p.getId()).asString();
+                    Gson gsonEvents = new Gson();
+                    Event[] resultEvents = gsonEvents.fromJson(tempEvents.getBody().toString(), Event[].class);
+                    System.out.println("ResEve " + resultEvents);
+                    System.out.println("ResEveLength " + resultEvents.length);
+
+                    playerBoardDTO = new PlayerBoardDTO(p, b, resultEvents);
 
                     return gson.toJson(playerBoardDTO);
-
-//                  TODO - SPÄTER! -Nur ausgelöste Events sollen zurückgegeben werden
-//                  TODO - possible Options to take???
-//                HttpResponse eventRes  = Unirest.get(EVENTSADDRESS + "/event/"+g_ID).asJson();
-//                Event event = gson.fromJson(eventRes.getBody().toString(), Event.class);
-//
-//                jsonObject.put("events", event);
                 }
             }
             return "";

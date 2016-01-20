@@ -165,7 +165,7 @@ public class BankService {
 //                            .create();
                     Event event = new Event("type","transfer from amount","resource","reason",from.getPlayer());
                     Unirest.post(restopoly.util.Ports.EVENTSADDRESS).queryString("gameid", req.params(":gameid")).body(new Gson().toJson(event)).asString();
-                    HttpResponse tempEvents = Unirest.get(restopoly.util.Ports.EVENTSADDRESS).asString();
+                    HttpResponse tempEvents = Unirest.get(restopoly.util.Ports.EVENTSADDRESS).asJson();
                     Gson gsonEvents = new Gson();
                     Event[] resultEvents = gsonEvents.fromJson(tempEvents.getBody().toString(), Event[].class);
                     return gsonEvents.toJson(resultEvents);
